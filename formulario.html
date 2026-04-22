@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Registro Entrenamiento – Coquimbo Unido</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:    #F5C400;
+    --gold2:   #FFD740;
+    --bg:      #0A0A0A;
+    --bg2:     #111111;
+    --bg3:     #1A1A1A;
+    --surface: #222222;
+    --border:  #2A2A2A;
+    --text:    #F0F0F0;
+    --muted:   #777777;
+    --green:   #22C55E;
+    --red:     #EF4444;
+    --radius:  10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 48px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--bg2);
+    border-bottom: 3px solid var(--gold);
+    padding: 16px 20px 14px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: #000;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 2px 10px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--text);
+    line-height: 1.1;
+    letter-spacing: 0.5px;
+  }
+  .header h1 span { color: var(--gold); }
+
+  /* ── CONTENEDOR ── */
+  .container { max-width: 480px; margin: 0 auto; padding: 20px 16px 0; }
+
+  /* ── SECCIÓN ── */
+  .section {
+    background: var(--bg2);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── CAMPOS ── */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  select, input[type="text"], input[type="number"], input[type="date"], textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color .2s, background .2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  select:focus, input:focus, textarea:focus {
+    border-color: var(--gold);
+    background: var(--surface);
+  }
+  select option { background: var(--bg2); }
+  textarea { resize: none; height: 72px; }
+
+  /* ── GRID 2/3 columnas ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+
+  /* ── BLOQUE EJERCICIO ── */
+  .ejercicio-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    position: relative;
+    transition: border-color .2s;
+  }
+  .ejercicio-block.active { border-color: var(--gold); }
+  .ejercicio-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ejercicio-num .dot {
+    width: 20px; height: 20px;
+    background: var(--gold);
+    color: #000;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ej-optional { color: var(--muted); font-size: 10px; margin-left: auto; font-weight: 400; letter-spacing: 0; }
+
+  /* ── RPE SLIDER ── */
+  .rpe-wrapper { position: relative; }
+  .rpe-value {
+    position: absolute;
+    right: 14px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--gold);
+    pointer-events: none;
+    min-width: 24px;
+    text-align: right;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: calc(100% - 48px);
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    background: var(--bg3);
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    border: 3px solid var(--bg2);
+  }
+  .rpe-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    padding: 0 2px;
+  }
+
+  /* ── BOTÓN ENVIAR ── */
+  .btn-submit {
+    width: 100%;
+    background: var(--gold);
+    color: #000;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    margin-top: 8px;
+  }
+  .btn-submit:hover { background: var(--gold2); }
+  .btn-submit:active { transform: scale(0.98); }
+  .btn-submit:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--green);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 28px;
+    border-radius: 50px;
+    z-index: 999;
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+  .toast.error { background: var(--red); }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── LOADING ── */
+  .spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 3px solid rgba(26,58,92,0.3);
+    border-top-color: var(--azul);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── REQUIRED MARK ── */
+  .req { color: var(--gold); margin-left: 2px; }
+
+  /* ── INFO BAR ── */
+  .info-bar {
+    background: var(--bg3);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .info-bar strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">Cadetes · Temporada 2026</div>
+  <h1>COQUIMBO <span>UNIDO</span><br>Registro de Entrenamiento</h1>
+  <p style="margin-top:8px;font-size:11px;color:var(--muted);letter-spacing:1px">Profesor Claudio Rojas Hidalgo</p>
+</div>
+
+<div class="container">
+
+  <div class="info-bar">
+    Completa los ejercicios que realizaste hoy. <strong>Solo el Ejercicio 1 es obligatorio.</strong> Puedes registrar hasta 8 ejercicios por sesión.
+  </div>
+
+  <form id="mainForm" novalidate>
+
+    <!-- ── IDENTIFICACIÓN ── -->
+    <div class="section">
+      <div class="section-title">Identificación</div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Categoría <span class="req">*</span></label>
+          <select id="categoria" required>
+            <option value="">Elegir...</option>
+            <option value="Sub 13">Sub 13</option>
+            <option value="Sub 14">Sub 14</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Fecha <span class="req">*</span></label>
+          <input type="date" id="fecha" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Nombre deportista <span class="req">*</span></label>
+        <select id="nombre" required>
+          <option value="">Selecciona tu nombre...</option>
+          <!-- SUB 13 -->
+          <optgroup label="── Sub 13 ──" id="group13">
+            <option value="Agustin Gomez">Agustin Gomez</option>
+            <option value="Agustin Luque">Agustin Luque</option>
+            <option value="Alejandro Toranzo">Alejandro Toranzo</option>
+            <option value="Alonso Rocco">Alonso Rocco</option>
+            <option value="Benjamin Leyton">Benjamin Leyton</option>
+            <option value="Benjamin Vallejos">Benjamin Vallejos</option>
+            <option value="Bruno Olivares">Bruno Olivares</option>
+            <option value="Cristian Castillo">Cristian Castillo</option>
+            <option value="Dylan Navea">Dylan Navea</option>
+            <option value="Emiliano Montalban">Emiliano Montalban</option>
+            <option value="Esaid Rojas">Esaid Rojas</option>
+            <option value="Felipe Valdivia">Felipe Valdivia</option>
+            <option value="Giacomo Zandonai">Giacomo Zandonai</option>
+            <option value="Jose Galvez">Jose Galvez</option>
+            <option value="Leon Peralta">Leon Peralta</option>
+            <option value="Maickol Gavilan">Maickol Gavilan</option>
+            <option value="Manuel Plaza">Manuel Plaza</option>
+            <option value="Martin Concha">Martin Concha</option>
+            <option value="Martin Diaz">Martin Diaz</option>
+            <option value="Martin Santander">Martin Santander</option>
+            <option value="Milenko Araya">Milenko Araya</option>
+            <option value="Renato Ugarte">Renato Ugarte</option>
+            <option value="Rodrigo Maluenda">Rodrigo Maluenda</option>
+            <option value="Salvador Sanchez">Salvador Sanchez</option>
+            <option value="Sebastian Quezada">Sebastian Quezada</option>
+            <option value="Vicente Arancibia">Vicente Arancibia</option>
+          </optgroup>
+          <!-- SUB 14 -->
+          <optgroup label="── Sub 14 ──" id="group14">
+            <option value="Aaron Diaz">Aaron Diaz</option>
+            <option value="Agustin Torres">Agustin Torres</option>
+            <option value="Alexis Segovia">Alexis Segovia</option>
+            <option value="Bastian Villarroel">Bastian Villarroel</option>
+            <option value="Benjamin Herrera">Benjamin Herrera</option>
+            <option value="Benjamin Mendez">Benjamin Mendez</option>
+            <option value="Cristian Cerezo">Cristian Cerezo</option>
+            <option value="Cristian Rojas">Cristian Rojas</option>
+            <option value="Cristobal Sarmiento">Cristobal Sarmiento</option>
+            <option value="Cristobal Vega">Cristobal Vega</option>
+            <option value="Donkan Collao">Donkan Collao</option>
+            <option value="Emiliano Santander">Emiliano Santander</option>
+            <option value="Emilio Rodriguez">Emilio Rodriguez</option>
+            <option value="Gaspar Olivares">Gaspar Olivares</option>
+            <option value="Gerardo Cortes">Gerardo Cortes</option>
+            <option value="Gregorio Gonzalez">Gregorio Gonzalez</option>
+            <option value="Ignacio Rojas">Ignacio Rojas</option>
+            <option value="Jaime Silva">Jaime Silva</option>
+            <option value="Joe Riquelme">Joe Riquelme</option>
+            <option value="Jose Oyarzo">Jose Oyarzo</option>
+            <option value="Manuel Espinoza">Manuel Espinoza</option>
+            <option value="Martin Guerrero">Martin Guerrero</option>
+            <option value="Matias Providel">Matias Providel</option>
+            <option value="Matias Rojas">Matias Rojas</option>
+            <option value="Maximiliano Araya">Maximiliano Araya</option>
+            <option value="Pablo Aguila">Pablo Aguila</option>
+            <option value="Samuel Larez">Samuel Larez</option>
+            <option value="Yamir Sepulveda">Yamir Sepulveda</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── EJERCICIOS ── -->
+    <div class="section">
+      <div class="section-title">Ejercicios de la sesión</div>
+
+      <!-- EJERCICIO 1 (obligatorio) -->
+      <div class="ejercicio-block active" id="bloque1">
+        <div class="ejercicio-num">
+          <div class="dot">1</div> Ejercicio 1 <span class="req">*</span>
+        </div>
+        <div class="field">
+          <label>Ejercicio</label>
+          <select class="sel-ejercicio" data-n="1" required>
+            <option value="">Seleccionar...</option>
+            <option>Sentadilla barra atrás</option>
+            <option>Sentadilla Copa</option>
+            <option>Estocadas estática</option>
+            <option>Estocada con desplazamiento adelante</option>
+            <option>Subidas al cajón</option>
+            <option>Estocadas ida y vuelta</option>
+            <option>Peso Muerto con barra</option>
+            <option>Peso Muerto con barra hexagonal</option>
+            <option>Peso muerto con mancuerna</option>
+            <option>Peso muerto unilateral</option>
+            <option>Empuje de cadera con barra</option>
+            <option>Empuje de cadera unilateral con mancuerna</option>
+            <option>Empuje de cadera en colchoneta con mancuerna</option>
+            <option>Empuje de cadera en colchoneta unilateral con mancuerna</option>
+            <option>Press de banca con barra</option>
+            <option>Press de banca con mancuerna</option>
+            <option>Remo inclinado con barra</option>
+            <option>Remo inclinado con mancuerna</option>
+            <option>Arranque con barra</option>
+            <option>Arranque con mancuerna a una mano</option>
+            <option>Cargada con barra</option>
+            <option>2do tiempo con barra</option>
+            <option>2do tiempo con mancuernas</option>
+            <option>Pliometría escalera</option>
+            <option>Pliometría en conos</option>
+            <option>Pliometría cajón</option>
+            <option>Pliometría vallas</option>
+            <option>Pliometría vallas - conos</option>
+            <option>Pliometría cajón - conos - vallas</option>
+            <option>Trabajos de velocidad 10 mtrs</option>
+          </select>
+        </div>
+        <div class="grid-4">
+          <div class="field">
+            <label>Series</label>
+            <input type="number" class="inp-series" data-n="1" min="1" max="20" placeholder="4">
+          </div>
+          <div class="field">
+            <label>Reps</label>
+            <input type="number" class="inp-reps" data-n="1" min="1" max="100" placeholder="8">
+          </div>
+          <div class="field">
+            <label>Pausa (s)</label>
+            <input type="number" class="inp-pausa" data-n="1" min="0" max="600" placeholder="60">
+          </div>
+          <div class="field">
+            <label>Carga (kg)</label>
+            <input type="number" class="inp-carga" data-n="1" min="0" max="500" step="0.5" placeholder="60">
+          </div>
+        </div>
+        <div class="field">
+          <label>RPE – Percepción de esfuerzo (0–10)</label>
+          <div class="rpe-wrapper">
+            <input type="range" class="inp-rpe" data-n="1" min="0" max="10" value="5" step="1">
+            <span class="rpe-value" id="rpeVal1">5</span>
+          </div>
+          <div class="rpe-labels"><span>0 Sin esfuerzo</span><span>10 Máximo</span></div>
+        </div>
+      </div>
+
+      <!-- EJERCICIOS 2-5 (opcionales, colapsados) -->
+      <div id="bloques-opcionales"></div>
+
+    </div>
+
+    <!-- ── OBSERVACIONES ── -->
+    <div class="section">
+      <div class="section-title">Observaciones</div>
+      <div class="field">
+        <label>Lesión, molestia o comentario (opcional)</label>
+        <textarea id="observaciones" placeholder="Ej: leve molestia en rodilla derecha..."></textarea>
+      </div>
+    </div>
+
+    <!-- ── ENVIAR ── -->
+    <button type="submit" class="btn-submit" id="btnEnviar">
+      REGISTRAR SESIÓN
+    </button>
+
+  </form>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIGURACIÓN ──────────────────────────────────────────────────────────
+// 👇 Reemplaza esta URL con la del Apps Script cuando lo publiques
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxmx4LHPoVramEU0VjljPXF1GR0b0gQxBbus_YDOpR1crGjl2rGBh42jqogHVxL52wc/exec";
+
+const EJERCICIOS = [
+  "Sentadilla barra atrás","Sentadilla Copa","Estocadas estática",
+  "Estocada con desplazamiento adelante","Subidas al cajón","Estocadas ida y vuelta",
+  "Peso Muerto con barra","Peso Muerto con barra hexagonal","Peso muerto con mancuerna",
+  "Peso muerto unilateral","Empuje de cadera con barra","Empuje de cadera unilateral con mancuerna",
+  "Empuje de cadera en colchoneta con mancuerna","Empuje de cadera en colchoneta unilateral con mancuerna",
+  "Press de banca con barra","Press de banca con mancuerna","Remo inclinado con barra",
+  "Remo inclinado con mancuerna","Arranque con barra","Arranque con mancuerna a una mano",
+  "Cargada con barra","2do tiempo con barra","2do tiempo con mancuernas",
+  "Pliometría escalera","Pliometría en conos","Pliometría cajón","Pliometría vallas",
+  "Pliometría vallas - conos","Pliometría cajón - conos - vallas","Trabajos de velocidad 10 mtrs"
+];
+
+// ── FECHA HOY ──────────────────────────────────────────────────────────────
+document.getElementById('fecha').valueAsDate = new Date();
+
+// ── BLOQUES OPCIONALES 2-5 ─────────────────────────────────────────────────
+function buildOptions() {
+  return EJERCICIOS.map(e => `<option>${e}</option>`).join('');
+}
+
+function buildBloque(n) {
+  return `
+  <div class="ejercicio-block" id="bloque${n}">
+    <div class="ejercicio-num">
+      <div class="dot">${n}</div> Ejercicio ${n} <span class="ej-optional">Opcional</span>
+    </div>
+    <div class="field">
+      <label>Ejercicio</label>
+      <select class="sel-ejercicio" data-n="${n}">
+        <option value="">Seleccionar...</option>
+        ${buildOptions()}
+      </select>
+    </div>
+    <div class="grid-4">
+      <div class="field"><label>Series</label>
+        <input type="number" class="inp-series" data-n="${n}" min="1" max="20" placeholder="4"></div>
+      <div class="field"><label>Reps</label>
+        <input type="number" class="inp-reps" data-n="${n}" min="1" max="100" placeholder="8"></div>
+      <div class="field"><label>Pausa (s)</label>
+        <input type="number" class="inp-pausa" data-n="${n}" min="0" max="600" placeholder="60"></div>
+      <div class="field"><label>Carga (kg)</label>
+        <input type="number" class="inp-carga" data-n="${n}" min="0" max="500" step="0.5" placeholder="60"></div>
+    </div>
+    <div class="field">
+      <label>RPE (0–10)</label>
+      <div class="rpe-wrapper">
+        <input type="range" class="inp-rpe" data-n="${n}" min="0" max="10" value="5" step="1">
+        <span class="rpe-value" id="rpeVal${n}">5</span>
+      </div>
+      <div class="rpe-labels"><span>0 Sin esfuerzo</span><span>10 Máximo</span></div>
+    </div>
+  </div>`;
+}
+
+const contenedor = document.getElementById('bloques-opcionales');
+for (let i = 2; i <= 8; i++) {
+  contenedor.insertAdjacentHTML('beforeend', buildBloque(i));
+}
+
+// ── RPE SLIDERS ────────────────────────────────────────────────────────────
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('inp-rpe')) {
+    const n = e.target.dataset.n;
+    document.getElementById('rpeVal' + n).textContent = e.target.value;
+  }
+  if (e.target.classList.contains('sel-ejercicio')) {
+    const n = e.target.dataset.n;
+    const bloque = document.getElementById('bloque' + n);
+    bloque.classList.toggle('active', e.target.value !== '');
+  }
+});
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  requestAnimationFrame(() => { t.classList.add('show'); });
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── RECOGER DATOS ──────────────────────────────────────────────────────────
+function getFormData() {
+  const ejercicios = [];
+  for (let n = 1; n <= 8; n++) {
+    const ej = document.querySelector(`.sel-ejercicio[data-n="${n}"]`).value;
+    if (!ej) continue;
+    ejercicios.push({
+      ejercicio: ej,
+      series:    document.querySelector(`.inp-series[data-n="${n}"]`).value || '',
+      reps:      document.querySelector(`.inp-reps[data-n="${n}"]`).value || '',
+      pausa:     document.querySelector(`.inp-pausa[data-n="${n}"]`).value || '',
+      carga:     document.querySelector(`.inp-carga[data-n="${n}"]`).value || '',
+      rpe:       document.querySelector(`.inp-rpe[data-n="${n}"]`).value
+    });
+  }
+
+  return {
+    fecha:         document.getElementById('fecha').value,
+    categoria:     document.getElementById('categoria').value,
+    nombre:        document.getElementById('nombre').options[document.getElementById('nombre').selectedIndex].text,
+    observaciones: document.getElementById('observaciones').value,
+    ejercicios
+  };
+}
+
+// ── VALIDACIÓN ─────────────────────────────────────────────────────────────
+function validar(data) {
+  if (!data.categoria)           return "Selecciona tu categoría";
+  if (!data.fecha)               return "Ingresa la fecha";
+  if (!data.nombre || data.nombre === 'Selecciona tu nombre...')
+                                 return "Selecciona tu nombre";
+  if (data.ejercicios.length === 0) return "Registra al menos un ejercicio";
+  return null;
+}
+
+// ── ENVÍO ──────────────────────────────────────────────────────────────────
+document.getElementById('mainForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const data = getFormData();
+  const error = validar(data);
+  if (error) { showToast(error, true); return; }
+
+  const btn = document.getElementById('btnEnviar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Enviando...';
+
+  try {
+    // Aplanar ejercicios en columnas (E1..E5)
+    const payload = {
+      fecha:         data.fecha,
+      categoria:     data.categoria,
+      nombre:        data.nombre,
+      observaciones: data.observaciones,
+      timestamp:     new Date().toISOString()
+    };
+    for (let i = 0; i < 8; i++) {
+      const ej = data.ejercicios[i] || {};
+      const n  = i + 1;
+      payload[`ej${n}`]     = ej.ejercicio || '';
+      payload[`series${n}`] = ej.series    || '';
+      payload[`reps${n}`]   = ej.reps      || '';
+      payload[`pausa${n}`]  = ej.pausa     || '';
+      payload[`carga${n}`]  = ej.carga     || '';
+      payload[`rpe${n}`]    = ej.rpe       || '';
+    }
+
+    // Apps Script acepta GET con parámetros via no-cors
+    const params = new URLSearchParams(payload);
+    await fetch(APPS_SCRIPT_URL + '?' + params.toString(), {
+      method: 'GET',
+      mode:   'no-cors'
+    });
+
+    // no-cors no devuelve respuesta legible — si no lanzó excepción, fue exitoso
+
+    showToast('✓ Sesión registrada correctamente');
+    document.getElementById('mainForm').reset();
+    document.getElementById('fecha').valueAsDate = new Date();
+    document.querySelectorAll('.ejercicio-block').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.rpe-value').forEach((el, i) => { el.textContent = '5'; });
+
+  } catch (err) {
+    showToast('Error al enviar. Intenta nuevamente.', true);
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'REGISTRAR SESIÓN';
+  }
+});
+</script>
+</body>
+</html>
