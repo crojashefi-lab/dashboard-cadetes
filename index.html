@@ -874,31 +874,35 @@ function exportFichaJugadorPDF(nm) {
 
 // ── EVALUACIONES ──────────────────────────────────────────────────────────
 function renderEval() {
-  document.getElementById('load-eval').style.display = 'none';
-  document.getElementById('cont-eval').style.display = 'block';
+  const loadEl = document.getElementById('load-eval');
+  const contEl = document.getElementById('cont-eval');
+  if (loadEl) loadEl.style.display = 'none';
+  if (contEl) contEl.style.display = 'block';
   const cat = document.getElementById('sel-cat-ev')?.value||'';
-  const evs = cat ? DATA.ev.filter(r=>r['Categoría']===cat) : DATA.ev;
-  const empty = `<tr><td colspan="6" class="empty">Sin datos de evaluación aún</td></tr>`;
-  const row = (r,c1,c2,c3,del)=>`<tr>
-    <td><strong>${r['Nombre']||''}</strong></td><td>${catBadge(r['Categoría'])}</td>
+  const evs = cat ? DATA.ev.filter(r=>get(r,'Categoría')===cat) : DATA.ev;
+  const empty = `<tr><td colspan="6" class="empty">Sin datos de evaluación aún — ingresa datos en la hoja EVALUACIONES del Sheet</td></tr>`;
+  const row = (r,c1,c2,c3)=>`<tr>
+    <td><strong>${get(r,'Nombre')||''}</strong></td><td>${catBadge(get(r,'Categoría'))}</td>
     <td>${r[c1]||'—'}</td><td>${r[c2]||'—'}</td><td>${r[c3]||'—'}</td>
     <td>${delta(r[c1],r[c2],true)}</td></tr>`;
   document.getElementById('tb-v10').innerHTML = evs.length ? evs.map(r=>row(r,'VEL10 E1','VEL10 E2','VEL10 E3')).join('') : empty;
   document.getElementById('tb-v20').innerHTML = evs.length ? evs.map(r=>row(r,'VEL20 E1','VEL20 E2','VEL20 E3')).join('') : empty;
   document.getElementById('tb-rsi').innerHTML = evs.length
     ? evs.map(r=>`<tr>
-        <td><strong>${r['Nombre']||''}</strong></td><td>${catBadge(r['Categoría'])}</td>
+        <td><strong>${get(r,'Nombre')||''}</strong></td><td>${catBadge(get(r,'Categoría'))}</td>
         <td>${r['RSI E1']||'—'}</td><td>${r['RSI E2']||'—'}</td><td>${r['RSI E3']||'—'}</td>
         <td>${delta(r['RSI E1'],r['RSI E2'])}</td></tr>`).join('') : empty;
 }
 
 // ── FATIGA ────────────────────────────────────────────────────────────────
 function renderFatiga() {
-  document.getElementById('load-fat').style.display = 'none';
-  document.getElementById('cont-fat').style.display = 'block';
+  const loadEl = document.getElementById('load-fat');
+  const contEl = document.getElementById('cont-fat');
+  if (loadEl) loadEl.style.display = 'none';
+  if (contEl) contEl.style.display = 'block';
   const cat = document.getElementById('sel-cat-fat')?.value||'';
   const meses = ['Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const rows = cat ? DATA.fat.filter(r=>r['Categoría']===cat) : DATA.fat;
+  const rows = cat ? DATA.fat.filter(r=>get(r,'Categoría')===cat) : DATA.fat;
   document.getElementById('tb-fat').innerHTML = rows.length
     ? rows.map(r=>{
         const vs = meses.map(m=>r[m]||'');
@@ -911,11 +915,11 @@ function renderFatiga() {
           sem=`<span class="badge ${sc}">${st}</span>`;
         }
         return `<tr>
-          <td><strong>${r['Nombre']||''}</strong></td><td>${catBadge(r['Categoría'])}</td>
+          <td><strong>${get(r,'Nombre')||''}</strong></td><td>${catBadge(get(r,'Categoría'))}</td>
           ${vs.map(v=>`<td style="text-align:center">${v||'—'}</td>`).join('')}
           <td style="text-align:center">${varP}</td><td>${sem}</td></tr>`;
       }).join('')
-    : `<tr><td colspan="14" class="empty">Sin datos de fatiga aún</td></tr>`;
+    : `<tr><td colspan="14" class="empty">Sin datos de fatiga aún — ingresa datos en la hoja FATIGA_MENSUAL del Sheet</td></tr>`;
 }
 
 // ── EXPORTAR PDF EVALUACIONES ─────────────────────────────────────────────
