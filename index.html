@@ -477,7 +477,7 @@ tr:hover td{background:var(--bg3)}
 // CONFIG
 // ══════════════════════════════════════════
 const SHEET_ID = '1DW-XlsqyfjbUygmGt9bIGb9MPzv-iEt2vTMFb0WiCtg';
-const PASSWORD = '2026cadetescu';
+const PASSWORD = '2026formativocu';
 
 // Rangos de cada hoja (nombre de hoja y rango A1)
 const RANGES = {
@@ -587,8 +587,8 @@ async function loadAll() {
     NOMINA.all = [...NOMINA.sub13, ...NOMINA.sub14];
 
     DATA.registro  = reg.slice(2).filter(r => r[0] && r[2]); // fila 1=título, 2=headers
-    DATA.velocidad = vel.slice(4).filter(r => r[0]);          // fila 4 = primera de datos (0-indexed)
-    DATA.perfil    = perf.slice(1).filter(r => r[0]);          // fila 1 = primera de datos
+    DATA.velocidad = vel.slice(4).filter(r => r[0]);          // fila 4 = primera de datos (0-indexed, saltando título+umbrales+encabezados)
+    DATA.perfil    = perf.slice(1).filter(r => r[0] && r[0] !== 'Nombre'); // fila 1 = datos (salta encabezado)
     DATA.fatiga    = fat.slice(3).filter(r => r[0]);
 
     // Poblar selectores
@@ -608,10 +608,18 @@ async function loadAll() {
 }
 
 function populateSelectors() {
+  // Construir nómina completa desde datos reales
+  const nombresSet = new Set();
+  [...DATA.velocidad, ...DATA.perfil].forEach(r => {
+    if (r[0] && r[0] !== 'Nombre') nombresSet.add(r[0]);
+  });
+  PHV_DATA.forEach(p => nombresSet.add(p.nombre));
+  const todosNombres = [...nombresSet].sort((a,b) => a.localeCompare(b,'es'));
+
   // Selector ficha
   const fichaSel = document.getElementById('ficha-sel');
   fichaSel.innerHTML = '<option value="">Seleccionar...</option>';
-  NOMINA.all.forEach(n => {
+  todosNombres.forEach(n => {
     const o = document.createElement('option');
     o.value = n; o.textContent = n;
     fichaSel.appendChild(o);
@@ -620,7 +628,8 @@ function populateSelectors() {
   // Selector fatiga chart
   const fatSel = document.getElementById('fat-sel');
   fatSel.innerHTML = '<option value="">Seleccionar...</option>';
-  NOMINA.all.forEach(n => {
+  const fatNombres = DATA.fatiga.map(r=>r[0]).filter(Boolean).sort((a,b)=>a.localeCompare(b,'es'));
+  fatNombres.forEach(n => {
     const o = document.createElement('option');
     o.value = n; o.textContent = n;
     fatSel.appendChild(o);
@@ -630,9 +639,21 @@ function populateSelectors() {
 function updateFichaNomina() {
   const cat = document.getElementById('ficha-cat').value;
   const sel = document.getElementById('ficha-sel');
-  const list = cat === 'Sub 13' ? NOMINA.sub13 : cat === 'Sub 14' ? NOMINA.sub14 : NOMINA.all;
   sel.innerHTML = '<option value="">Seleccionar...</option>';
-  list.forEach(n => {
+
+  // Construir nómina desde todas las fuentes disponibles
+  const nombresSet = new Set();
+  [...DATA.velocidad, ...DATA.perfil].forEach(r => {
+    if (r[0] && r[0] !== 'Nombre') {
+      if (!cat || r[1] === cat) nombresSet.add(r[0]);
+    }
+  });
+  PHV_DATA.forEach(p => {
+    if (!cat || p.cat === cat) nombresSet.add(p.nombre);
+  });
+
+  const nombres = [...nombresSet].sort((a,b) => a.localeCompare(b, 'es'));
+  nombres.forEach(n => {
     const o = document.createElement('option');
     o.value = n; o.textContent = n;
     sel.appendChild(o);
@@ -1030,18 +1051,66 @@ function renderFicha() {
   const djRow   = DATA.perfil.find(r => r[0] === nombre);
   const fatRow  = DATA.fatiga.find(r => r[0] === nombre);
 
+  // PHV — busqueda flexible por apellido+nombre
+  const phvRow = PHV_DATA.find(p => {
+    const pn = p.nombre.toLowerCase().replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i').replace(/[óòö]/g,'o').replace(/[úùü]/g,'u');
+    const nn = nombre.toLowerCase().replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i').replace(/[óòö]/g,'o').replace(/[úùü]/g,'u');
+    const parts = nn.split(' ');
+    return parts.every(p2 => pn.includes(p2));
+  });
+
   // Stats de carga
-  const sesTotal = regRows.length;
-  const volTotal = regRows.reduce((s,r)=>s+(parseFloat(r[28])||0),0);
-  const saltosTotal = regRows.reduce((s,r)=>s+(parseFloat(r[36])||0),0);
-  const rpes = regRows.map(r=>parseFloat(r[29])).filter(n=>!isNaN(n));
-  const rpeAvg = rpes.length ? (rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1) : '—';
+  const sesTotal   = regRows.length;
+  const volTotal   = regRows.reduce((s,r)=>s+(parseFloat(r[28])||0),0);
+  const saltosTotal= regRows.reduce((s,r)=>s+(parseFloat(r[36])||0),0);
+  const rpes       = regRows.map(r=>parseFloat(r[29])).filter(n=>!isNaN(n));
+  const rpeAvg     = rpes.length ? (rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1) : '—';
+  const cat        = velRow ? velRow[1] : djRow ? djRow[1] : phvRow ? phvRow.cat : '—';
+
+  // Bloque velocidad — TEST VELOCIDAD: col6=5m Mejor, col10=10m Mejor, col14=30m Mejor, col15=Sem5, col16=Sem10, col17=Sem30
+  const velHTML = velRow ? `
+    <div class="ficha-row"><span class="ficha-row-label">5m mejor (s)</span><span class="ficha-row-val">${fmtNum(velRow[6],3)||'—'}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Semáforo 5m</span><span class="ficha-row-val" style="font-size:11px">${velRow[15]||'—'}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">10m mejor (s)</span><span class="ficha-row-val">${fmtNum(velRow[10],3)||'—'}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Semáforo 10m</span><span class="ficha-row-val" style="font-size:11px">${velRow[16]||'—'}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">30m mejor (s)</span><span class="ficha-row-val">${fmtNum(velRow[14],3)||'—'}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Semáforo 30m</span><span class="ficha-row-val" style="font-size:11px">${velRow[17]||'—'}</span></div>
+  ` : '<div class="ficha-row"><span class="ficha-row-label" style="color:var(--muted)">Sin evaluaciones</span></div>';
+
+  // Bloque perfil — PERFIL FUERZA REACTIVA: col2=CMJ, col4=H.Salto, col5=Tc, col6=Q, col7=Perfil
+  const djHTML = djRow ? `
+    <div class="ficha-row"><span class="ficha-row-label">✅ CMJ (cm)</span><span class="ficha-row-val">${fmtNum(djRow[2],1)||'—'}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">H. Caída DJ (cm)</span><span class="ficha-row-val">${djRow[3]||'—'}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">H. Salto DJ (cm)</span><span class="ficha-row-val">${fmtNum(djRow[4],1)||'—'}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Tc (ms)</span><span class="ficha-row-val">${djRow[5]||'—'}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">✅ Q / RSI</span><span class="ficha-row-val">${fmtNum(djRow[6],3)||'—'}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Perfil</span><span class="ficha-row-val">${perfilHtml(djRow[7])}</span></div>
+  ` : '<div class="ficha-row"><span class="ficha-row-label" style="color:var(--muted)">Sin evaluaciones</span></div>';
+
+  // Bloque fatiga
+  const fatHTML = fatRow ? `
+    <div class="ficha-row"><span class="ficha-row-label">Estado actual</span><span class="ficha-row-val">${semHtml(fatRow[74])}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">CMJ Inicio Abr</span><span class="ficha-row-val">${fmtNum(fatRow[4],1)} cm</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">CMJ Final Abr</span><span class="ficha-row-val">${fmtNum(fatRow[7],1)} cm</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">% Cambio Abr</span><span class="ficha-row-val">${deltaHtml(fatRow[8])}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Semáforo Abr</span><span class="ficha-row-val">${semHtml(fatRow[9])}</span></div>
+  ` : '<div class="ficha-row"><span class="ficha-row-label" style="color:var(--muted)">Sin evaluaciones</span></div>';
+
+  // Bloque PHV
+  const phvColor = (o) => o < -1 ? 'var(--green)' : o > 1 ? 'var(--red)' : 'var(--yellow)';
+  const phvHTML = phvRow ? `
+    <div class="ficha-row"><span class="ficha-row-label">Clasificación</span><span class="ficha-row-val" style="color:${phvColor(phvRow.offset)};font-weight:700">${phvRow.clasif}</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Offset PHV</span><span class="ficha-row-val" style="color:${phvColor(phvRow.offset)};font-weight:700">${phvRow.offset} años</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Edad</span><span class="ficha-row-val">${phvRow.edad} años</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Talla actual</span><span class="ficha-row-val">${phvRow.talla} cm</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Cm por crecer</span><span class="ficha-row-val">${phvRow.cmCrecer} cm</span></div>
+    <div class="ficha-row"><span class="ficha-row-label">Est. proyectada</span><span class="ficha-row-val">${phvRow.estProyec} cm</span></div>
+  ` : '<div class="ficha-row"><span class="ficha-row-label" style="color:var(--muted)">Sin datos PHV</span></div>';
 
   cont.innerHTML = `
   <div class="section" style="margin-bottom:12px">
-    <div class="section-title">${nombre}</div>
+    <div class="section-title">${nombre} <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:8px">${cat}</span></div>
     <div class="ficha-grid">
-
       <div class="ficha-block">
         <div class="ficha-block-title">📋 Carga de entrenamiento</div>
         <div class="ficha-row"><span class="ficha-row-label">Sesiones registradas</span><span class="ficha-row-val">${sesTotal}</span></div>
@@ -1049,42 +1118,22 @@ function renderFicha() {
         <div class="ficha-row"><span class="ficha-row-label">Total contactos/saltos</span><span class="ficha-row-val">${saltosTotal > 0 ? saltosTotal : '—'}</span></div>
         <div class="ficha-row"><span class="ficha-row-label">RPE promedio</span><span class="ficha-row-val">${rpeAvg}</span></div>
       </div>
-
       <div class="ficha-block">
-        <div class="ficha-block-title">⚡ Velocidad</div>
-        ${velRow ? `
-        <div class="ficha-row"><span class="ficha-row-label">10m E1</span><span class="ficha-row-val">${fmtNum(velRow[5],2)} s</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">10m E2</span><span class="ficha-row-val">${fmtNum(velRow[9],2)} s</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">10m Tendencia</span><span class="ficha-row-val">${semHtml(velRow[16])}</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">20m E1</span><span class="ficha-row-val">${fmtNum(velRow[20],2)} s</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">20m E2</span><span class="ficha-row-val">${fmtNum(velRow[24],2)} s</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">20m Tendencia</span><span class="ficha-row-val">${semHtml(velRow[31])}</span></div>
-        ` : '<div class="ficha-row"><span class="ficha-row-label" style="color:var(--muted)">Sin evaluaciones</span></div>'}
+        <div class="ficha-block-title">⚡ Test Velocidad E1</div>
+        ${velHTML}
       </div>
-
       <div class="ficha-block">
-        <div class="ficha-block-title">🏋️ Perfil Fuerza Reactiva</div>
-        ${djRow ? `
-        <div class="ficha-row"><span class="ficha-row-label">Perfil E1</span><span class="ficha-row-val">${perfilHtml(djRow[6])}</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">H. Salto E1 (cm)</span><span class="ficha-row-val">${fmtNum(djRow[3],1)}</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">Tc E1 (ms)</span><span class="ficha-row-val">${djRow[4]||'—'}</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">Q E1</span><span class="ficha-row-val">${fmtNum(djRow[5],3)}</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">Perfil E2</span><span class="ficha-row-val">${perfilHtml(djRow[11])}</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">Δ Q E1→E2</span><span class="ficha-row-val">${deltaHtml(djRow[17])}</span></div>
-        ` : '<div class="ficha-row"><span class="ficha-row-label" style="color:var(--muted)">Sin evaluaciones</span></div>'}
+        <div class="ficha-block-title">🏋️ Perfil Fuerza Reactiva E1</div>
+        ${djHTML}
       </div>
-
       <div class="ficha-block">
         <div class="ficha-block-title">📊 Fatiga CMJ</div>
-        ${fatRow ? `
-        <div class="ficha-row"><span class="ficha-row-label">Estado actual</span><span class="ficha-row-val">${semHtml(fatRow[74])}</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">CMJ Mejor Inicio (Abr)</span><span class="ficha-row-val">${fmtNum(fatRow[4],1)} cm</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">CMJ Mejor Final (Abr)</span><span class="ficha-row-val">${fmtNum(fatRow[7],1)} cm</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">% Cambio Abr</span><span class="ficha-row-val">${deltaHtml(fatRow[8])}</span></div>
-        <div class="ficha-row"><span class="ficha-row-label">Semáforo Abr</span><span class="ficha-row-val">${semHtml(fatRow[9])}</span></div>
-        ` : '<div class="ficha-row"><span class="ficha-row-label" style="color:var(--muted)">Sin evaluaciones</span></div>'}
+        ${fatHTML}
       </div>
-
+      <div class="ficha-block">
+        <div class="ficha-block-title">🧬 PHV · Maduración Biológica</div>
+        ${phvHTML}
+      </div>
     </div>
   </div>`;
 }
