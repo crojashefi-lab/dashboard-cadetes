@@ -518,6 +518,9 @@ function setPanel(id, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
   btn.classList.add('active');
+  if (id === 'velocidad') renderVelocidad();
+  if (id === 'perfil') renderPerfil();
+  if (id === 'phv') renderPHV();
 }
 
 function setCat(panel, cat, btn) {
@@ -696,12 +699,7 @@ async function loadAll() {
 
     DATA.registro = reg.slice(2).filter(r => r[0] && r[2]);
     DATA.fatiga   = fat.slice(3).filter(r => r[0]);
-
-    // Solo sobreescribir velocidad/perfil si el Sheet devuelve datos reales
-    const velFromSheet = vel.slice(4).filter(r => r[0] && r[0] !== 'Nombre');
-    const perfFromSheet = perf.slice(1).filter(r => r[0] && r[0] !== 'Nombre');
-    if (velFromSheet.length  > 5) DATA.velocidad = velFromSheet;
-    if (perfFromSheet.length > 5) DATA.perfil    = perfFromSheet;
+    // Velocidad y Perfil: siempre usar datos embebidos (estructura garantizada)
 
   } catch(e) {
     console.warn('Sheet no disponible, usando datos embebidos:', e.message);
@@ -999,21 +997,15 @@ function renderChartVel(rows) {
 function renderPerfil() {
   const cat = CAT_STATE.dj;
   const rows = DATA.perfil.filter(r => catMatch(r[1], cat) && r[0]);
-
-  // PERFIL_DJ estructura:
-  // 0=Nombre,1=Cat
-  // E1: 2=H.caída,3=H.salto,4=Tc,5=Q,6=Perfil
-  // E2: 7,8,9,10,11
-  // E3: 12,13,14,15,16
-  // Δ Q E1→E2: 17, Δ Q E2→E3: 18, Tendencia: 19
+  // PERF_DATA: [0=Nombre, 1=Cat, 2=CMJ, 3=H_caida, 4=H_salto, 5=Tc, 6=Q, 7=Perfil]
 
   const perfiles = { optimo:0, lenta:0, inef:0, deficit:0 };
   rows.forEach(r => {
-    const p = r[7]||'';
-    if (p.includes('Óptimo') || p.includes('Opt.'))  perfiles.optimo++;
-    else if (p.includes('Lenta') || p.includes('Med.')) perfiles.lenta++;
-    else if (p.includes('Inef') || p.includes('Límite')) perfiles.inef++;
-    else if (p.includes('Global') || p.includes('Déficit')) perfiles.deficit++;
+    const p = String(r[7]||'');
+    if (p.includes('Opt.') || p.includes('Óptimo'))    perfiles.optimo++;
+    else if (p.includes('Med.') || p.includes('Lenta')) perfiles.lenta++;
+    else if (p.includes('Límite') || p.includes('Inef')) perfiles.inef++;
+    else if (p.includes('Déficit') || p.includes('Global')) perfiles.deficit++;
   });
 
   document.getElementById('dj-c1').textContent = perfiles.optimo;
@@ -1022,22 +1014,21 @@ function renderPerfil() {
   document.getElementById('dj-c4').textContent = perfiles.deficit;
 
   const tb = document.getElementById('tbl-dj');
-  if (!rows.length) {
-    tb.innerHTML = '<tr><td colspan="12" class="empty">Sin datos</td></tr>';
-    return;
-  }
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="13" class="empty">Sin datos</td></tr>'; return; }
 
   tb.innerHTML = rows.map(r => `<tr>
-    <td class="td-name">${r[0]}</td><td class="td-cat">${r[1]||''}</td>
-    <td>${fmtNum(r[2],1)||'—'}</td>
-    <td>${fmtNum(r[4],1)||'—'}</td>
-    <td>${r[5]||'—'}</td>
-    <td>${fmtNum(r[6],3)||'—'}</td>
+    <td class="td-name">${r[0]}</td>
+    <td class="td-cat">${r[1]||''}</td>
+    <td>${r[2]!=null ? fmtNum(r[2],1) : '—'}</td>
+    <td>${r[4]!=null ? fmtNum(r[4],1) : '—'}</td>
+    <td>${r[5]!=null ? r[5] : '—'}</td>
+    <td>${r[6]!=null ? fmtNum(r[6],3) : '—'}</td>
     <td>${perfilHtml(r[7])}</td>
-    <td>—</td><td>—</td><td>—</td>
-    <td>${perfilHtml('')}</td>
-    <td>—</td><td>—</td>
+    <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
   </tr>`).join('');
+
+  renderChartPerfil(perfiles);
+}
 
   // Gráfico dona
   renderChartPerfil(perfiles);
