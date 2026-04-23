@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Técnico – Coquimbo Unido Cadetes 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:    #F5C400;
+  --gold2:   #FFD740;
+  --bg:      #0A0A0A;
+  --bg2:     #111111;
+  --bg3:     #1A1A1A;
+  --surface: #222222;
+  --border:  #2A2A2A;
+  --text:    #F0F0F0;
+  --muted:   #777777;
+  --green:   #22C55E;
+  --green-bg:#052e16;
+  --yellow:  #EAB308;
+  --yellow-bg:#1c1400;
+  --orange:  #F97316;
+  --orange-bg:#1c0a00;
+  --red:     #EF4444;
+  --red-bg:  #1c0404;
+  --blue:    #3B82F6;
+  --radius:  10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+
+/* ── LOCK ── */
+#lock-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:20px;padding:0 32px}
+#lock-screen .lock-logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:32px;color:var(--text)}
+#lock-screen .lock-logo span{color:var(--gold)}
+#lock-screen input{background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:15px;padding:12px 16px;width:260px;outline:none;text-align:center;letter-spacing:3px}
+#lock-screen input:focus{border-color:var(--gold)}
+#lock-screen button{background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:8px;padding:12px 32px;cursor:pointer;width:260px}
+#lock-screen button:hover{background:var(--gold2)}
+#lock-screen .lock-err{color:var(--red);font-size:12px;height:16px}
+#lock-screen .lock-sub{color:var(--muted);font-size:12px;text-align:center}
+
+/* ── HEADER ── */
+.header{background:var(--bg2);border-bottom:3px solid var(--gold);padding:14px 20px;position:sticky;top:0;z-index:100}
+.header-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.header-logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;line-height:1}
+.header-logo span{color:var(--gold)}
+.header-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:4px}
+#btn-refresh{background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer;transition:.2s}
+#btn-refresh:hover{border-color:var(--gold);color:var(--gold)}
+#last-update{font-size:10px;color:var(--muted)}
+
+/* ── NAV ── */
+.nav{background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-inner{max-width:1280px;margin:0 auto;display:flex;gap:0}
+.nav-btn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 20px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
+.nav-btn:hover{color:var(--text)}
+.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* ── LAYOUT ── */
+.main{max-width:1280px;margin:0 auto;padding:20px 16px}
+.panel{display:none}.panel.active{display:block}
+
+/* ── FILTRO CATEGORÍA ── */
+.cat-filter{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.cat-filter label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-right:4px}
+.cat-btn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;transition:.2s}
+.cat-btn:hover{border-color:var(--gold);color:var(--gold)}
+.cat-btn.active{background:var(--gold);color:#000;border-color:var(--gold)}
+
+/* ── SELECTOR DEPORTISTA ── */
+.selector-row{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.selector-row label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.selector-row select{background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 12px;outline:none;cursor:pointer;flex:1;min-width:200px;max-width:320px}
+.selector-row select:focus{border-color:var(--gold)}
+
+/* ── CARDS RESUMEN ── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.card-label{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.card-val{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:28px;color:var(--gold);line-height:1}
+.card-sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* ── SECCIÓN ── */
+.section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.section-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── TABLA ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+.td-name{font-weight:600;white-space:nowrap}
+.td-cat{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+
+/* ── SEMÁFORO ── */
+.sem{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap}
+.sem-green{background:var(--green-bg);color:var(--green)}
+.sem-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.sem-orange{background:var(--orange-bg);color:var(--orange)}
+.sem-red{background:var(--red-bg);color:var(--red)}
+.sem-gray{background:var(--bg3);color:var(--muted)}
+
+/* ── PERFIL CHIP ── */
+.perfil-chip{display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;white-space:nowrap}
+.perfil-optimo{background:#052e16;color:#22c55e}
+.perfil-lenta{background:#1c1400;color:#eab308}
+.perfil-inef{background:#1c0a00;color:#f97316}
+.perfil-deficit{background:#1c0404;color:#ef4444}
+.perfil-nd{background:var(--bg3);color:var(--muted)}
+
+/* ── DELTA ── */
+.delta-pos{color:var(--green);font-weight:600}
+.delta-neg{color:var(--red);font-weight:600}
+.delta-neu{color:var(--muted)}
+
+/* ── GRÁFICO ── */
+.chart-wrap{position:relative;height:220px;margin-top:8px}
+
+/* ── VACÍO / LOADING ── */
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.loading{text-align:center;padding:20px;color:var(--muted);font-size:12px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* ── FICHA INDIVIDUAL ── */
+.ficha-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.ficha-block{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px}
+.ficha-block-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.ficha-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.ficha-row:last-child{border-bottom:none}
+.ficha-row-label{color:var(--muted)}
+.ficha-row-val{font-weight:600;text-align:right}
+
+/* ── RESP ── */
+@media(max-width:600px){
+  .cards-grid{grid-template-columns:1fr 1fr}
+  .header-logo{font-size:18px}
+  .nav-btn{padding:10px 14px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOCK ── -->
+<div id="lock-screen">
+  <div style="text-align:center">
+    <img src="data:image/png;base64,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" alt="Coquimbo Unido" style="width:90px;height:90px;object-fit:contain;margin-bottom:10px;border-radius:50%;border:2px solid var(--gold)">
+    <div class="lock-logo">COQUIMBO <span>UNIDO</span></div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">Dashboard Técnico · Cadetes 2026</div>
+  </div>
+  <div style="width:260px;text-align:center">
+    <div class="lock-err" id="lock-err"></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;width:260px">
+    <input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')checkPwd()" style="flex:1;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:15px;padding:11px 14px;outline:none;letter-spacing:2px;text-align:center">
+    <button onclick="togglePwd()" id="eye-btn" style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;color:var(--muted);font-size:16px;cursor:pointer;padding:10px 12px;line-height:1;flex-shrink:0;transition:.2s" title="Mostrar/ocultar">👁</button>
+  </div>
+  <button onclick="checkPwd()">INGRESAR</button>
+  <div class="lock-sub">Acceso exclusivo cuerpo técnico<br>Coquimbo Unido · Cadetes 2026</div>
+  <div style="margin-top:8px;color:var(--muted);font-size:11px;text-align:center">Profesor Claudio Rojas Hidalgo</div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app" style="display:none">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div style="display:flex;align-items:center;gap:12px">
+      <img src="data:image/png;base64,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" alt="CU" style="width:40px;height:40px;object-fit:contain;border-radius:50%">
+      <div>
+        <div class="header-logo">COQUIMBO <span>UNIDO</span></div>
+        <div class="header-meta">Dashboard Cadetes · Temporada 2026 · Claudio Rojas Hidalgo</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="badge">Técnico</span>
+      <button id="btn-refresh" onclick="loadAll()">↻ Actualizar</button>
+      <span id="last-update"></span>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="setPanel('carga',this)">📋 Carga</button>
+    <button class="nav-btn" onclick="setPanel('velocidad',this)">⚡ Velocidad</button>
+    <button class="nav-btn" onclick="setPanel('perfil',this)">🏋️ Perfil DJ</button>
+    <button class="nav-btn" onclick="setPanel('fatiga',this)">📊 Fatiga CMJ</button>
+    <button class="nav-btn" onclick="setPanel('phv',this)">🧬 PHV · Maduración</button>
+    <button class="nav-btn" onclick="setPanel('ficha',this)">👤 Ficha</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ══════════════════════════════════════════
+     PANEL 1 — CARGA
+══════════════════════════════════════════ -->
+<div id="panel-carga" class="panel active">
+  <div class="cat-filter">
+    <label>Categoría</label>
+    <button class="cat-btn active" onclick="setCat('carga','todas',this)">Todas</button>
+    <button class="cat-btn" onclick="setCat('carga','Sub 13',this)">Sub 13</button>
+    <button class="cat-btn" onclick="setCat('carga','Sub 14',this)">Sub 14</button>
+  </div>
+
+  <div class="cards-grid" id="carga-cards">
+    <div class="card"><div class="card-label">Sesiones hoy</div><div class="card-val" id="c-hoy">—</div></div>
+    <div class="card"><div class="card-label">Vol. semanal (kg)</div><div class="card-val" id="c-vol">—</div></div>
+    <div class="card"><div class="card-label">RPE promedio</div><div class="card-val" id="c-rpe">—</div></div>
+    <div class="card"><div class="card-label">Contactos saltos</div><div class="card-val" id="c-saltos">—</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Registros de hoy</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Nombre</th><th>Cat.</th><th>Ejercicio 1</th><th>S</th><th>R</th><th>kg</th>
+          <th>Ejercicio 2</th><th>S</th><th>R</th><th>kg</th>
+          <th>Vol.kg</th><th>Saltos</th><th>RPE</th>
+        </tr></thead>
+        <tbody id="tbl-hoy"><tr><td colspan="13" class="loading">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Resumen semanal por deportista</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Nombre</th><th>Cat.</th><th>Sesiones</th>
+          <th>Vol. Total (kg)</th><th>Vol. Saltos (contactos)</th><th>RPE Prom.</th><th>Estado</th>
+        </tr></thead>
+        <tbody id="tbl-semana"><tr><td colspan="7" class="loading">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Volumen semanal por deportista (kg)</div>
+    <div class="chart-wrap"><canvas id="chart-vol"></canvas></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 2 — VELOCIDAD
+══════════════════════════════════════════ -->
+<div id="panel-velocidad" class="panel">
+  <div class="cat-filter">
+    <label>Categoría</label>
+    <button class="cat-btn active" onclick="setCat('vel','todas',this)">Todas</button>
+    <button class="cat-btn" onclick="setCat('vel','Sub 13',this)">Sub 13</button>
+    <button class="cat-btn" onclick="setCat('vel','Sub 14',this)">Sub 14</button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Velocidad 10 metros (s) — menor es mejor</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Nombre</th><th>Cat.</th>
+          <th>E1 Mejor</th><th>E2 Mejor</th><th>E3 Mejor</th>
+          <th>Δ E1→E2</th><th>Δ E2→E3</th><th>Tendencia</th>
+        </tr></thead>
+        <tbody id="tbl-vel10"><tr><td colspan="8" class="loading">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Velocidad 20 metros (s) — menor es mejor</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Nombre</th><th>Cat.</th>
+          <th>E1 Mejor</th><th>E2 Mejor</th><th>E3 Mejor</th>
+          <th>Δ E1→E2</th><th>Δ E2→E3</th><th>Tendencia</th>
+        </tr></thead>
+        <tbody id="tbl-vel20"><tr><td colspan="8" class="loading">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Comparativa E1 vs E2 — 10m y 20m</div>
+    <div class="chart-wrap"><canvas id="chart-vel"></canvas></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:8px">
+    <button onclick="exportVelocidadCSV()" style="background:var(--bg3);border:1px solid var(--gold);color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:7px 16px;border-radius:6px;cursor:pointer">⬇ Descargar CSV Velocidad</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 3 — PERFIL DJ
+══════════════════════════════════════════ -->
+<div id="panel-perfil" class="panel">
+  <div class="cat-filter">
+    <label>Categoría</label>
+    <button class="cat-btn active" onclick="setCat('dj','todas',this)">Todas</button>
+    <button class="cat-btn" onclick="setCat('dj','Sub 13',this)">Sub 13</button>
+    <button class="cat-btn" onclick="setCat('dj','Sub 14',this)">Sub 14</button>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card"><div class="card-label">Reactivo Óptimo</div><div class="card-val" id="dj-c1" style="color:var(--green)">—</div><div class="card-sub">deportistas</div></div>
+    <div class="card"><div class="card-label">Fuerza Lenta</div><div class="card-val" id="dj-c2" style="color:var(--yellow)">—</div><div class="card-sub">deportistas</div></div>
+    <div class="card"><div class="card-label">Elástico Inef.</div><div class="card-val" id="dj-c3" style="color:var(--orange)">—</div><div class="card-sub">deportistas</div></div>
+    <div class="card"><div class="card-label">Déficit Global</div><div class="card-val" id="dj-c4" style="color:var(--red)">—</div><div class="card-sub">deportistas</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Perfil de fuerza reactiva por deportista</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Nombre</th><th>Cat.</th>
+          <th>CMJ E1 (cm)</th><th>H.Salto DJ (cm)</th><th>Tc (ms)</th><th>Q / RSI</th><th>Perfil E1</th>
+          <th>H.Salto E2</th><th>Tc E2</th><th>Q E2</th><th>Perfil E2</th>
+          <th>Δ Q</th><th>Tendencia</th>
+        </tr></thead>
+        <tbody id="tbl-dj"><tr><td colspan="12" class="loading">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Distribución perfiles E1 (último disponible)</div>
+    <div class="chart-wrap" style="height:200px"><canvas id="chart-perfil"></canvas></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:8px">
+    <button onclick="exportPerfilCSV()" style="background:var(--bg3);border:1px solid var(--gold);color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:7px 16px;border-radius:6px;cursor:pointer">⬇ Descargar CSV Perfil DJ</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 4 — FATIGA CMJ
+══════════════════════════════════════════ -->
+<div id="panel-fatiga" class="panel">
+  <div class="cat-filter">
+    <label>Categoría</label>
+    <button class="cat-btn active" onclick="setCat('fat','todas',this)">Todas</button>
+    <button class="cat-btn" onclick="setCat('fat','Sub 13',this)">Sub 13</button>
+    <button class="cat-btn" onclick="setCat('fat','Sub 14',this)">Sub 14</button>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card"><div class="card-label">🟢 Óptimo</div><div class="card-val" id="fat-c1" style="color:var(--green)">—</div></div>
+    <div class="card"><div class="card-label">🟡 Fatiga leve</div><div class="card-val" id="fat-c2" style="color:var(--yellow)">—</div></div>
+    <div class="card"><div class="card-label">🟠 Fatiga moderada</div><div class="card-val" id="fat-c3" style="color:var(--orange)">—</div></div>
+    <div class="card"><div class="card-label">🔴 Fatiga alta</div><div class="card-val" id="fat-c4" style="color:var(--red)">—</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Índice de fatiga mensual CMJ</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Nombre</th><th>Cat.</th>
+          <th>Abr</th><th>May</th><th>Jun</th><th>Jul</th>
+          <th>Ago</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dic</th>
+          <th>Estado actual</th>
+        </tr></thead>
+        <tbody id="tbl-fatiga"><tr><td colspan="12" class="loading">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Evolución CMJ — selecciona deportista</div>
+    <div class="selector-row">
+      <label>Deportista</label>
+      <select id="fat-sel" onchange="renderFatigaChart()"><option value="">Seleccionar...</option></select>
+    </div>
+    <div class="chart-wrap"><canvas id="chart-fatiga"></canvas></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 5 — PHV · MADURACIÓN
+══════════════════════════════════════════ -->
+<div id="panel-phv" class="panel">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:20px">
+    <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase">Categoría</label>
+    <select id="phv-cat" onchange="renderPHV()" style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:7px 12px;outline:none">
+      <option value="">Todas</option><option>Sub 13</option><option>Sub 14</option>
+    </select>
+    <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase">Clasificación</label>
+    <select id="phv-cls" onchange="renderPHV()" style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:7px 12px;outline:none">
+      <option value="">Todas</option><option>Pre-PHV</option><option>Circa-PHV</option><option>Post-PHV</option>
+    </select>
+    <button onclick="exportPHVcsv()" style="margin-left:auto;background:var(--bg3);border:1px solid var(--gold);color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:7px 16px;border-radius:6px;cursor:pointer">⬇ Descargar CSV PHV</button>
+  </div>
+
+  <div class="cards-grid" id="phv-cards">
+    <div class="card"><div class="card-label">🟢 Pre-PHV</div><div class="card-val" id="phv-pre" style="color:var(--green)">—</div><div class="card-sub">deportistas</div></div>
+    <div class="card"><div class="card-label">🟡 Circa-PHV</div><div class="card-val" id="phv-circa" style="color:var(--yellow)">—</div><div class="card-sub">deportistas</div></div>
+    <div class="card"><div class="card-label">🔴 Post-PHV</div><div class="card-val" id="phv-post" style="color:var(--red)">—</div><div class="card-sub">deportistas</div></div>
+    <div class="card"><div class="card-label">Offset prom.</div><div class="card-val" id="phv-offset-avg" style="color:var(--gold)">—</div><div class="card-sub">años desde pico</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+    <div class="section">
+      <div class="section-title">Distribución Offset PHV</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="chart-phv-offset"></canvas></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Clasificación por categoría</div>
+      <div style="padding:8px 0;font-size:12px;line-height:2">
+        <div><span style="color:var(--green);font-weight:700">🟢 Pre-PHV</span> &nbsp;<span style="color:var(--muted)">Ventana de desarrollo amplia · Priorizar carga técnica</span></div>
+        <div><span style="color:var(--yellow);font-weight:700">🟡 Circa-PHV</span> &nbsp;<span style="color:var(--muted)">Período sensible · Monitoreo intensivo de carga</span></div>
+        <div><span style="color:var(--red);font-weight:700">🔴 Post-PHV</span> &nbsp;<span style="color:var(--muted)">Pico superado · Carga con criterio adulto progresivo</span></div>
+      </div>
+      <div class="chart-wrap" style="height:140px"><canvas id="chart-phv-cls"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Detalle individual — PHV & Maduración</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Nombre</th><th>Cat.</th><th>Edad</th><th>Talla (cm)</th><th>Masa (kg)</th>
+          <th>Offset PHV</th><th>Edad PHV est.</th><th>Cm por crecer</th>
+          <th>Est. proyectada</th><th>Clasificación</th><th>Interpretación</th>
+        </tr></thead>
+        <tbody id="tbl-phv"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cruce PHV × CMJ / Drop Jump</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Nombre</th><th>Cat.</th><th>Clasificación PHV</th><th>Offset PHV</th>
+          <th>CMJ E1 (cm)</th><th>Q/RSI DJ E1</th><th>Contexto madurativo</th>
+        </tr></thead>
+        <tbody id="tbl-phv-cruce"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:12px;padding:12px;background:var(--bg3);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.8">
+      📌 <strong style="color:var(--gold)">Cómo interpretar el cruce PHV × Salto:</strong><br>
+      · <strong style="color:var(--text)">Pre-PHV:</strong> valores de CMJ y RSI bajos son esperables — el foco debe estar en la técnica, no en la potencia absoluta.<br>
+      · <strong style="color:var(--text)">Circa-PHV:</strong> período de máxima sensibilidad neural. Ganancias rápidas son posibles pero la sobrecarga puede generar lesiones en fisis abiertas.<br>
+      · <strong style="color:var(--text)">Post-PHV:</strong> el sistema neuro-muscular está maduro. Se puede comenzar a interpretar CMJ y RSI con baremos adultos progresivos.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 6 — FICHA INDIVIDUAL
+══════════════════════════════════════════ -->
+<div id="panel-ficha" class="panel">
+  <div class="selector-row" style="margin-bottom:16px">
+    <label>Categoría</label>
+    <select id="ficha-cat" onchange="updateFichaNomina()">
+      <option value="">Todas</option>
+      <option value="Sub 13">Sub 13</option>
+      <option value="Sub 14">Sub 14</option>
+    </select>
+    <label>Deportista</label>
+    <select id="ficha-sel" onchange="renderFicha()"><option value="">Seleccionar...</option></select>
+    <button onclick="exportFichaPDF()" style="background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:8px 16px;border-radius:6px;border:none;cursor:pointer;white-space:nowrap">⬇ PDF Ficha</button>
+  </div>
+
+  <div id="ficha-content">
+    <div class="empty">Selecciona una categoría y un deportista</div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+const SHEET_ID = '1DW-XlsqyfjbUygmGt9bIGb9MPzv-iEt2vTMFb0WiCtg';
+const PASSWORD = '2026cadetescu';
+
+// Rangos de cada hoja (nombre de hoja y rango A1)
+const RANGES = {
+  config:    'CONFIG!A1:D50',
+  registro:  'REGISTRO_ENTRENAMIENTO!A1:AK500',
+  velocidad: 'VELOCIDAD!A1:AZ100',
+  perfil:    'PERFIL_DJ!A1:Z100',
+  fatiga:    'FATIGA_MENSUAL!A1:BZ100',
+};
+
+// ── Estado global ──────────────────────────
+let DATA = { config:{}, registro:[], velocidad:[], perfil:[], fatiga:[] };
+let NOMINA = { all:[], sub13:[], sub14:[] };
+let CAT_STATE = { carga:'todas', vel:'todas', dj:'todas', fat:'todas' };
+let charts = {};
+
+// ══════════════════════════════════════════
+// LOCK
+// ══════════════════════════════════════════
+function checkPwd() {
+  const v = document.getElementById('pwd-input').value;
+  const err = document.getElementById('lock-err');
+  if (v === PASSWORD) {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadAll();
+  } else {
+    err.textContent = 'Contraseña incorrecta';
+    setTimeout(() => err.textContent = '', 2000);
+  }
+}
+
+// ══════════════════════════════════════════
+// NAV / FILTROS
+// ══════════════════════════════════════════
+function setPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function setCat(panel, cat, btn) {
+  CAT_STATE[panel] = cat;
+  btn.closest('.cat-filter').querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (panel === 'carga')  renderCarga();
+  if (panel === 'vel')    renderVelocidad();
+  if (panel === 'dj')     renderPerfil();
+  if (panel === 'fat')    renderFatiga();
+}
+
+// ══════════════════════════════════════════
+// FETCH DATA desde Google Sheets (CSV público)
+// ══════════════════════════════════════════
+async function fetchSheet(sheetName, range) {
+  // Usamos el endpoint público de exportación de Sheets en CSV
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    return parseCSV(text);
+  } catch(e) {
+    console.warn('Error fetching', sheetName, e);
+    return [];
+  }
+}
+
+function parseCSV(text) {
+  const rows = [];
+  const lines = text.split('\n');
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const cols = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; continue; }
+      if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; continue; }
+      cur += c;
+    }
+    cols.push(cur.trim());
+    rows.push(cols);
+  }
+  return rows;
+}
+
+// ══════════════════════════════════════════
+// LOAD ALL
+// ══════════════════════════════════════════
+async function loadAll() {
+  document.getElementById('last-update').textContent = 'Actualizando...';
+  try {
+    const [cfg, reg, vel, perf, fat] = await Promise.all([
+      fetchSheet('CONFIG'),
+      fetchSheet('REGISTRO_ENTRENAMIENTO'),
+      fetchSheet('VELOCIDAD'),
+      fetchSheet('PERFIL_DJ'),
+      fetchSheet('FATIGA_MENSUAL'),
+    ]);
+
+    // Parsear nómina desde CONFIG
+    // Cols: A=ejercicios, B=Sub13, C=Sub14, D=Categorías
+    NOMINA.sub13 = cfg.slice(2).map(r => r[1]).filter(n => n && !n.includes('#') && n !== 'SUB 13');
+    NOMINA.sub14 = cfg.slice(2).map(r => r[2]).filter(n => n && !n.includes('#') && n !== 'SUB 14');
+    NOMINA.all = [...NOMINA.sub13, ...NOMINA.sub14];
+
+    DATA.registro  = reg.slice(2).filter(r => r[0] && r[2]); // fila 1=título, 2=headers
+    DATA.velocidad = vel.slice(4).filter(r => r[0]);          // fila 1=título,2-3=headers,4=sub
+    DATA.perfil    = perf.slice(4).filter(r => r[0]);
+    DATA.fatiga    = fat.slice(3).filter(r => r[0]);
+
+    // Poblar selectores
+    populateSelectors();
+
+    renderCarga();
+    renderVelocidad();
+    renderPerfil();
+    renderFatiga();
+    renderPHV();
+
+    document.getElementById('last-update').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    console.error(e);
+    document.getElementById('last-update').textContent = 'Error al cargar';
+  }
+}
+
+function populateSelectors() {
+  // Selector ficha
+  const fichaSel = document.getElementById('ficha-sel');
+  fichaSel.innerHTML = '<option value="">Seleccionar...</option>';
+  NOMINA.all.forEach(n => {
+    const o = document.createElement('option');
+    o.value = n; o.textContent = n;
+    fichaSel.appendChild(o);
+  });
+
+  // Selector fatiga chart
+  const fatSel = document.getElementById('fat-sel');
+  fatSel.innerHTML = '<option value="">Seleccionar...</option>';
+  NOMINA.all.forEach(n => {
+    const o = document.createElement('option');
+    o.value = n; o.textContent = n;
+    fatSel.appendChild(o);
+  });
+}
+
+function updateFichaNomina() {
+  const cat = document.getElementById('ficha-cat').value;
+  const sel = document.getElementById('ficha-sel');
+  const list = cat === 'Sub 13' ? NOMINA.sub13 : cat === 'Sub 14' ? NOMINA.sub14 : NOMINA.all;
+  sel.innerHTML = '<option value="">Seleccionar...</option>';
+  list.forEach(n => {
+    const o = document.createElement('option');
+    o.value = n; o.textContent = n;
+    sel.appendChild(o);
+  });
+  document.getElementById('ficha-content').innerHTML = '<div class="empty">Selecciona un deportista</div>';
+}
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function todayStr() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function semHtml(txt) {
+  if (!txt || txt === '—' || txt === 'Sin datos') return `<span class="sem sem-gray">Sin datos</span>`;
+  if (txt.includes('Óptimo') || txt.includes('Mejora')) return `<span class="sem sem-green">${txt}</span>`;
+  if (txt.includes('leve') || txt.includes('Estable')) return `<span class="sem sem-yellow">${txt}</span>`;
+  if (txt.includes('moderada') || txt.includes('moderado')) return `<span class="sem sem-orange">${txt}</span>`;
+  if (txt.includes('alta') || txt.includes('Regresión') || txt.includes('Global')) return `<span class="sem sem-red">${txt}</span>`;
+  return `<span class="sem sem-gray">${txt}</span>`;
+}
+
+function perfilHtml(p) {
+  if (!p) return `<span class="perfil-chip perfil-nd">—</span>`;
+  if (p.includes('Óptimo'))    return `<span class="perfil-chip perfil-optimo">${p}</span>`;
+  if (p.includes('Lenta'))     return `<span class="perfil-chip perfil-lenta">${p}</span>`;
+  if (p.includes('Ineficiente')) return `<span class="perfil-chip perfil-inef">${p}</span>`;
+  if (p.includes('Global'))    return `<span class="perfil-chip perfil-deficit">${p}</span>`;
+  return `<span class="perfil-chip perfil-nd">${p}</span>`;
+}
+
+function deltaHtml(v) {
+  if (v === '' || v === undefined || v === null) return '<span class="delta-neu">—</span>';
+  const n = parseFloat(String(v).replace('%','').replace(',','.'));
+  if (isNaN(n)) return `<span class="delta-neu">${v}</span>`;
+  const cls = n > 0 ? 'delta-pos' : n < 0 ? 'delta-neg' : 'delta-neu';
+  return `<span class="${cls}">${n>0?'+':''}${n.toFixed(1)}%</span>`;
+}
+
+function catMatch(rowCat, filter) {
+  if (filter === 'todas') return true;
+  return String(rowCat).toLowerCase().includes(filter.toLowerCase());
+}
+
+function fmtNum(v, dec=1) {
+  const n = parseFloat(String(v).replace(',','.'));
+  return isNaN(n) ? '—' : n.toFixed(dec);
+}
+
+// ══════════════════════════════════════════
+// PANEL CARGA
+// ══════════════════════════════════════════
+function renderCarga() {
+  const cat = CAT_STATE.carga;
+  const today = todayStr();
+  const rows = DATA.registro.filter(r => catMatch(r[1], cat));
+
+  // Registros de hoy
+  const hoy = rows.filter(r => r[0] && r[0].startsWith(today));
+  document.getElementById('c-hoy').textContent = hoy.length;
+
+  // Semana (últimos 7 días)
+  const semana = rows.filter(r => {
+    if (!r[0]) return false;
+    const d = new Date(r[0]); const now = new Date();
+    return (now - d) <= 7*24*60*60*1000;
+  });
+
+  // Vol total semana
+  const volSem = semana.reduce((s,r) => s + (parseFloat(r[28])||0), 0);
+  document.getElementById('c-vol').textContent = volSem > 0 ? volSem.toLocaleString('es-CL') : '—';
+
+  // RPE promedio
+  const rpes = semana.map(r => parseFloat(r[29])).filter(n => !isNaN(n));
+  const rpeAvg = rpes.length ? (rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1) : '—';
+  document.getElementById('c-rpe').textContent = rpeAvg;
+
+  // Saltos — columna AF (índice 31) = Total Contactos Sesión
+  const saltos = semana.reduce((s,r) => s + (parseFloat(r[36])||0), 0);
+  document.getElementById('c-saltos').textContent = saltos > 0 ? saltos : '—';
+
+  // Tabla hoy
+  const tbHoy = document.getElementById('tbl-hoy');
+  if (!hoy.length) {
+    tbHoy.innerHTML = '<tr><td colspan="13" class="empty">Sin registros hoy</td></tr>';
+  } else {
+    tbHoy.innerHTML = hoy.map(r => `<tr>
+      <td class="td-name">${r[2]||'—'}</td>
+      <td class="td-cat">${r[1]||''}</td>
+      <td>${r[3]||'—'}</td><td>${r[4]||'—'}</td><td>${r[5]||'—'}</td><td>${r[6]||'—'}</td>
+      <td>${r[8]||'—'}</td><td>${r[9]||'—'}</td><td>${r[10]||'—'}</td><td>${r[11]||'—'}</td>
+      <td><strong>${fmtNum(r[28],0)}</strong></td>
+      <td>${r[36]||'0'}</td>
+      <td>${r[29]||'—'}</td>
+    </tr>`).join('');
+  }
+
+  // Tabla semana — agrupar por deportista
+  const byDep = {};
+  semana.forEach(r => {
+    const n = r[2]; if (!n) return;
+    if (!byDep[n]) byDep[n] = { cat:r[1], sesiones:0, vol:0, saltos:0, rpes:[] };
+    byDep[n].sesiones++;
+    byDep[n].vol += parseFloat(r[28])||0;
+    byDep[n].saltos += parseFloat(r[36])||0;
+    const rpe = parseFloat(r[29]); if (!isNaN(rpe)) byDep[n].rpes.push(rpe);
+  });
+
+  const tbSem = document.getElementById('tbl-semana');
+  const deps = Object.entries(byDep);
+  if (!deps.length) {
+    tbSem.innerHTML = '<tr><td colspan="7" class="empty">Sin datos esta semana</td></tr>';
+  } else {
+    tbSem.innerHTML = deps.map(([n,d]) => {
+      const rpeAvg = d.rpes.length ? (d.rpes.reduce((a,b)=>a+b,0)/d.rpes.length) : null;
+      const est = rpeAvg === null ? semHtml('Sin datos') :
+                  rpeAvg >= 8 ? semHtml('🔴 Carga alta') :
+                  rpeAvg >= 6 ? semHtml('🟡 Carga moderada') : semHtml('🟢 Normal');
+      return `<tr>
+        <td class="td-name">${n}</td>
+        <td class="td-cat">${d.cat}</td>
+        <td>${d.sesiones}</td>
+        <td><strong>${d.vol.toLocaleString('es-CL')}</strong></td>
+        <td>${d.saltos > 0 ? d.saltos : '—'}</td>
+        <td>${rpeAvg !== null ? rpeAvg.toFixed(1) : '—'}</td>
+        <td>${est}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Gráfico volumen
+  renderChartVol(byDep);
+}
+
+function renderChartVol(byDep) {
+  const ctx = document.getElementById('chart-vol').getContext('2d');
+  if (charts.vol) charts.vol.destroy();
+  const labels = Object.keys(byDep);
+  const vals = labels.map(n => byDep[n].vol);
+  charts.vol = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Volumen (kg)',
+        data: vals,
+        backgroundColor: '#F5C400cc',
+        borderColor: '#F5C400',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#777', font: { size: 10 } }, grid: { color: '#2A2A2A' } },
+        y: { ticks: { color: '#777', font: { size: 10 } }, grid: { color: '#2A2A2A' } }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+// PANEL VELOCIDAD
+// ══════════════════════════════════════════
+function renderVelocidad() {
+  const cat = CAT_STATE.vel;
+  const rows = DATA.velocidad.filter(r => catMatch(r[1], cat) && r[0]);
+
+  // Hoja VELOCIDAD estructura:
+  // Col 0=Nombre, 1=Cat
+  // 10m E1: cols 2(I1),3(I2),4(I3),5(Mejor)
+  // 10m E2: 6,7,8,9(Mejor)
+  // 10m E3: 10,11,12,13(Mejor)
+  // 10m Δ1: 14, Δ2: 15, Tend: 16
+  // 20m E1: 17,18,19,20(Mejor)
+  // 20m E2: 21,22,23,24(Mejor)
+  // 20m E3: 25,26,27,28(Mejor)
+  // 20m Δ1: 29, Δ2: 30, Tend: 31
+
+  const tb10 = document.getElementById('tbl-vel10');
+  const tb20 = document.getElementById('tbl-vel20');
+
+  if (!rows.length) {
+    tb10.innerHTML = '<tr><td colspan="8" class="empty">Sin datos</td></tr>';
+    tb20.innerHTML = '<tr><td colspan="8" class="empty">Sin datos</td></tr>';
+    return;
+  }
+
+  tb10.innerHTML = rows.map(r => `<tr>
+    <td class="td-name">${r[0]}</td><td class="td-cat">${r[1]||''}</td>
+    <td>${fmtNum(r[5],2)||'—'}</td>
+    <td>${fmtNum(r[9],2)||'—'}</td>
+    <td>${fmtNum(r[13],2)||'—'}</td>
+    <td>${deltaHtml(r[14])}</td>
+    <td>${deltaHtml(r[15])}</td>
+    <td>${semHtml(r[16])}</td>
+  </tr>`).join('');
+
+  tb20.innerHTML = rows.map(r => `<tr>
+    <td class="td-name">${r[0]}</td><td class="td-cat">${r[1]||''}</td>
+    <td>${fmtNum(r[20],2)||'—'}</td>
+    <td>${fmtNum(r[24],2)||'—'}</td>
+    <td>${fmtNum(r[28],2)||'—'}</td>
+    <td>${deltaHtml(r[29])}</td>
+    <td>${deltaHtml(r[30])}</td>
+    <td>${semHtml(r[31])}</td>
+  </tr>`).join('');
+
+  // Gráfico comparativo
+  renderChartVel(rows);
+}
+
+function renderChartVel(rows) {
+  const ctx = document.getElementById('chart-vel').getContext('2d');
+  if (charts.vel) charts.vel.destroy();
+  const labels = rows.map(r => r[0]);
+  charts.vel = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: '10m E1', data: rows.map(r=>parseFloat(r[5])||null), backgroundColor: '#F5C400aa', borderRadius:3 },
+        { label: '10m E2', data: rows.map(r=>parseFloat(r[9])||null), backgroundColor: '#F5C40055', borderRadius:3 },
+        { label: '20m E1', data: rows.map(r=>parseFloat(r[20])||null), backgroundColor: '#3B82F6aa', borderRadius:3 },
+        { label: '20m E2', data: rows.map(r=>parseFloat(r[24])||null), backgroundColor: '#3B82F655', borderRadius:3 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#aaa', font:{size:10} } } },
+      scales:{
+        x:{ticks:{color:'#777',font:{size:9}},grid:{color:'#2A2A2A'}},
+        y:{ticks:{color:'#777',font:{size:9}},grid:{color:'#2A2A2A'},title:{display:true,text:'segundos',color:'#777',font:{size:9}}}
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+// PANEL PERFIL DJ
+// ══════════════════════════════════════════
+function renderPerfil() {
+  const cat = CAT_STATE.dj;
+  const rows = DATA.perfil.filter(r => catMatch(r[1], cat) && r[0]);
+
+  // PERFIL_DJ estructura:
+  // 0=Nombre,1=Cat
+  // E1: 2=H.caída,3=H.salto,4=Tc,5=Q,6=Perfil
+  // E2: 7,8,9,10,11
+  // E3: 12,13,14,15,16
+  // Δ Q E1→E2: 17, Δ Q E2→E3: 18, Tendencia: 19
+
+  const perfiles = { optimo:0, lenta:0, inef:0, deficit:0 };
+  rows.forEach(r => {
+    const p = r[7]||'';
+    if (p.includes('Óptimo') || p.includes('Opt.'))  perfiles.optimo++;
+    else if (p.includes('Lenta') || p.includes('Med.')) perfiles.lenta++;
+    else if (p.includes('Inef') || p.includes('Límite')) perfiles.inef++;
+    else if (p.includes('Global') || p.includes('Déficit')) perfiles.deficit++;
+  });
+
+  document.getElementById('dj-c1').textContent = perfiles.optimo;
+  document.getElementById('dj-c2').textContent = perfiles.lenta;
+  document.getElementById('dj-c3').textContent = perfiles.inef;
+  document.getElementById('dj-c4').textContent = perfiles.deficit;
+
+  const tb = document.getElementById('tbl-dj');
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="12" class="empty">Sin datos</td></tr>';
+    return;
+  }
+
+  tb.innerHTML = rows.map(r => `<tr>
+    <td class="td-name">${r[0]}</td><td class="td-cat">${r[1]||''}</td>
+    <td>${fmtNum(r[2],1)||'—'}</td>
+    <td>${fmtNum(r[4],1)||'—'}</td>
+    <td>${r[5]||'—'}</td>
+    <td>${fmtNum(r[6],3)||'—'}</td>
+    <td>${perfilHtml(r[7])}</td>
+    <td>—</td><td>—</td><td>—</td>
+    <td>${perfilHtml('')}</td>
+    <td>—</td><td>—</td>
+  </tr>`).join('');
+
+  // Gráfico dona
+  renderChartPerfil(perfiles);
+}
+
+function renderChartPerfil(p) {
+  const ctx = document.getElementById('chart-perfil').getContext('2d');
+  if (charts.perfil) charts.perfil.destroy();
+  charts.perfil = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Reactivo Óptimo','Fuerza Lenta','Elástico Inef.','Déficit Global'],
+      datasets: [{ data: [p.optimo,p.lenta,p.inef,p.deficit],
+        backgroundColor: ['#22C55E','#EAB308','#F97316','#EF4444'],
+        borderColor:'#111', borderWidth:2 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'right', labels:{ color:'#aaa', font:{size:10}, padding:10 } } }
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+// PANEL FATIGA
+// ══════════════════════════════════════════
+function renderFatiga() {
+  const cat = CAT_STATE.fat;
+  const rows = DATA.fatiga.filter(r => catMatch(r[1], cat) && r[0]);
+
+  // FATIGA_MENSUAL estructura (batch script):
+  // 0=Nombre, 1=Cat
+  // Por mes (8 cols cada uno): I1ini,I2ini,MejIni,I1fin,I2fin,MejFin,%cambio,Semáforo
+  // Meses: Abr(2-9), May(10-17), Jun(18-25), Jul(26-33), Ago(34-41), Sep(42-49), Oct(50-57), Nov(58-65), Dic(66-73)
+  // Estado actual: col 74
+
+  const SEM_COLS = [9,17,25,33,41,49,57,65,73]; // columna Semáforo de cada mes
+  const MESES = ['Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  const contadores = { optimo:0, leve:0, moderada:0, alta:0 };
+  rows.forEach(r => {
+    const est = r[74]||'';
+    if (est.includes('Óptimo')) contadores.optimo++;
+    else if (est.includes('leve')) contadores.leve++;
+    else if (est.includes('moderada')) contadores.moderada++;
+    else if (est.includes('alta')) contadores.alta++;
+  });
+
+  document.getElementById('fat-c1').textContent = contadores.optimo;
+  document.getElementById('fat-c2').textContent = contadores.leve;
+  document.getElementById('fat-c3').textContent = contadores.moderada;
+  document.getElementById('fat-c4').textContent = contadores.alta;
+
+  const tb = document.getElementById('tbl-fatiga');
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="12" class="empty">Sin datos</td></tr>';
+    return;
+  }
+
+  tb.innerHTML = rows.map(r => {
+    const mesesCells = SEM_COLS.map(c => `<td>${semHtml(r[c]||'')}</td>`).join('');
+    return `<tr>
+      <td class="td-name">${r[0]}</td><td class="td-cat">${r[1]||''}</td>
+      ${mesesCells}
+      <td>${semHtml(r[74]||'Sin datos')}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFatigaChart() {
+  const nombre = document.getElementById('fat-sel').value;
+  const ctx = document.getElementById('chart-fatiga').getContext('2d');
+  if (charts.fatiga) charts.fatiga.destroy();
+  if (!nombre) return;
+
+  const row = DATA.fatiga.find(r => r[0] === nombre);
+  if (!row) return;
+
+  const MESES = ['Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  // Col Mejor Inicio de cada mes: 4,12,20,28,36,44,52,60,68
+  // Col Mejor Final de cada mes:  7,15,23,31,39,47,55,63,71
+  const INI_COLS = [4,12,20,28,36,44,52,60,68];
+  const FIN_COLS = [7,15,23,31,39,47,55,63,71];
+
+  const inis = INI_COLS.map(c => parseFloat(row[c])||null);
+  const fins = FIN_COLS.map(c => parseFloat(row[c])||null);
+
+  charts.fatiga = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: MESES,
+      datasets: [
+        { label:'CMJ Inicio', data:inis, borderColor:'#F5C400', backgroundColor:'#F5C40022',
+          tension:.3, pointRadius:4, pointBackgroundColor:'#F5C400' },
+        { label:'CMJ Final',  data:fins, borderColor:'#22C55E', backgroundColor:'#22C55E22',
+          tension:.3, pointRadius:4, pointBackgroundColor:'#22C55E' },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#aaa', font:{size:10} } } },
+      scales:{
+        x:{ticks:{color:'#777',font:{size:10}},grid:{color:'#2A2A2A'}},
+        y:{ticks:{color:'#777',font:{size:10}},grid:{color:'#2A2A2A'},
+          title:{display:true,text:'cm',color:'#777',font:{size:9}}}
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+// PANEL FICHA INDIVIDUAL
+// ══════════════════════════════════════════
+function renderFicha() {
+  const nombre = document.getElementById('ficha-sel').value;
+  const cont = document.getElementById('ficha-content');
+  if (!nombre) { cont.innerHTML = '<div class="empty">Selecciona un deportista</div>'; return; }
+
+  // Buscar en todas las hojas
+  const regRows = DATA.registro.filter(r => r[2] === nombre);
+  const velRow  = DATA.velocidad.find(r => r[0] === nombre);
+  const djRow   = DATA.perfil.find(r => r[0] === nombre);
+  const fatRow  = DATA.fatiga.find(r => r[0] === nombre);
+
+  // Stats de carga
+  const sesTotal = regRows.length;
+  const volTotal = regRows.reduce((s,r)=>s+(parseFloat(r[28])||0),0);
+  const saltosTotal = regRows.reduce((s,r)=>s+(parseFloat(r[36])||0),0);
+  const rpes = regRows.map(r=>parseFloat(r[29])).filter(n=>!isNaN(n));
+  const rpeAvg = rpes.length ? (rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1) : '—';
+
+  cont.innerHTML = `
+  <div class="section" style="margin-bottom:12px">
+    <div class="section-title">${nombre}</div>
+    <div class="ficha-grid">
+
+      <div class="ficha-block">
+        <div class="ficha-block-title">📋 Carga de entrenamiento</div>
+        <div class="ficha-row"><span class="ficha-row-label">Sesiones registradas</span><span class="ficha-row-val">${sesTotal}</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">Volumen acumulado</span><span class="ficha-row-val">${volTotal.toLocaleString('es-CL')} kg</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">Total contactos/saltos</span><span class="ficha-row-val">${saltosTotal > 0 ? saltosTotal : '—'}</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">RPE promedio</span><span class="ficha-row-val">${rpeAvg}</span></div>
+      </div>
+
+      <div class="ficha-block">
+        <div class="ficha-block-title">⚡ Velocidad</div>
+        ${velRow ? `
+        <div class="ficha-row"><span class="ficha-row-label">10m E1</span><span class="ficha-row-val">${fmtNum(velRow[5],2)} s</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">10m E2</span><span class="ficha-row-val">${fmtNum(velRow[9],2)} s</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">10m Tendencia</span><span class="ficha-row-val">${semHtml(velRow[16])}</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">20m E1</span><span class="ficha-row-val">${fmtNum(velRow[20],2)} s</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">20m E2</span><span class="ficha-row-val">${fmtNum(velRow[24],2)} s</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">20m Tendencia</span><span class="ficha-row-val">${semHtml(velRow[31])}</span></div>
+        ` : '<div class="ficha-row"><span class="ficha-row-label" style="color:var(--muted)">Sin evaluaciones</span></div>'}
+      </div>
+
+      <div class="ficha-block">
+        <div class="ficha-block-title">🏋️ Perfil DJ</div>
+        ${djRow ? `
+        <div class="ficha-row"><span class="ficha-row-label">Perfil E1</span><span class="ficha-row-val">${perfilHtml(djRow[6])}</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">H. Salto E1 (cm)</span><span class="ficha-row-val">${fmtNum(djRow[3],1)}</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">Tc E1 (ms)</span><span class="ficha-row-val">${djRow[4]||'—'}</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">Q E1</span><span class="ficha-row-val">${fmtNum(djRow[5],3)}</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">Perfil E2</span><span class="ficha-row-val">${perfilHtml(djRow[11])}</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">Δ Q E1→E2</span><span class="ficha-row-val">${deltaHtml(djRow[17])}</span></div>
+        ` : '<div class="ficha-row"><span class="ficha-row-label" style="color:var(--muted)">Sin evaluaciones</span></div>'}
+      </div>
+
+      <div class="ficha-block">
+        <div class="ficha-block-title">📊 Fatiga CMJ</div>
+        ${fatRow ? `
+        <div class="ficha-row"><span class="ficha-row-label">Estado actual</span><span class="ficha-row-val">${semHtml(fatRow[74])}</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">CMJ Mejor Inicio (Abr)</span><span class="ficha-row-val">${fmtNum(fatRow[4],1)} cm</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">CMJ Mejor Final (Abr)</span><span class="ficha-row-val">${fmtNum(fatRow[7],1)} cm</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">% Cambio Abr</span><span class="ficha-row-val">${deltaHtml(fatRow[8])}</span></div>
+        <div class="ficha-row"><span class="ficha-row-label">Semáforo Abr</span><span class="ficha-row-val">${semHtml(fatRow[9])}</span></div>
+        ` : '<div class="ficha-row"><span class="ficha-row-label" style="color:var(--muted)">Sin evaluaciones</span></div>'}
+      </div>
+
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+function togglePwd() {
+  const inp = document.getElementById('pwd-input');
+  const btn = document.getElementById('eye-btn');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    inp.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+// ══════════════════════════════════════════
+// PHV DATA EMBEBIDA
+// ══════════════════════════════════════════
+const PHV_DATA = [
+  {"nombre":"Agustin Gomez","cat":"Sub 13","edad":13.2,"masa":70.0,"talla":171.9,"offset":0.32,"edadPHV":12.89,"cmCrecer":15.0,"estProyec":186.9,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Agustin Luque","cat":"Sub 13","edad":13.3,"masa":56.5,"talla":172.0,"offset":0.32,"edadPHV":12.99,"cmCrecer":14.9,"estProyec":186.9,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Alejandro Toranzo","cat":"Sub 13","edad":12.7,"masa":60.0,"talla":158.6,"offset":-0.49,"edadPHV":13.19,"cmCrecer":23.0,"estProyec":181.6,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Alonso Rocco","cat":"Sub 13","edad":12.0,"masa":42.3,"talla":149.2,"offset":-1.81,"edadPHV":13.81,"cmCrecer":32.0,"estProyec":181.2,"clasif":"Pre-PHV","interp":"VERDE - Desarrollo"},
+  {"nombre":"Benjamin Leyton","cat":"Sub 13","edad":13.1,"masa":66.3,"talla":184.1,"offset":0.58,"edadPHV":12.53,"cmCrecer":12.1,"estProyec":196.2,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Benjamin Vallejos","cat":"Sub 13","edad":13.1,"masa":60.6,"talla":166.9,"offset":-0.19,"edadPHV":13.29,"cmCrecer":20.1,"estProyec":187.0,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Bruno Olivares","cat":"Sub 13","edad":12.8,"masa":50.6,"talla":162.1,"offset":-0.4,"edadPHV":13.2,"cmCrecer":22.0,"estProyec":184.1,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Cristian Castillo","cat":"Sub 13","edad":13.1,"masa":49.5,"talla":150.2,"offset":-1.1,"edadPHV":14.2,"cmCrecer":24.3,"estProyec":174.5,"clasif":"Pre-PHV","interp":"VERDE - Desarrollo"},
+  {"nombre":"Dylan Navea","cat":"Sub 13","edad":12.8,"masa":39.6,"talla":151.4,"offset":-1.63,"edadPHV":14.43,"cmCrecer":27.9,"estProyec":179.3,"clasif":"Pre-PHV","interp":"VERDE - Desarrollo"},
+  {"nombre":"Emiliano Montalban","cat":"Sub 13","edad":13.4,"masa":47.4,"talla":161.4,"offset":-0.33,"edadPHV":13.73,"cmCrecer":22.0,"estProyec":183.4,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Esaid Rojas","cat":"Sub 13","edad":12.5,"masa":53.8,"talla":160.5,"offset":-0.8,"edadPHV":13.3,"cmCrecer":25.5,"estProyec":186.0,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Felipe Valdivia","cat":"Sub 13","edad":13.2,"masa":49.8,"talla":162.0,"offset":-0.61,"edadPHV":13.81,"cmCrecer":23.8,"estProyec":185.8,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Giacomo Zandonai","cat":"Sub 13","edad":12.4,"masa":48.6,"talla":162.5,"offset":-0.56,"edadPHV":12.96,"cmCrecer":23.0,"estProyec":185.5,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Jose Galvez","cat":"Sub 13","edad":12.7,"masa":40.7,"talla":145.8,"offset":-1.66,"edadPHV":14.36,"cmCrecer":27.9,"estProyec":173.7,"clasif":"Pre-PHV","interp":"VERDE - Desarrollo"},
+  {"nombre":"Leon Peralta","cat":"Sub 13","edad":13.2,"masa":63.9,"talla":171.3,"offset":0.58,"edadPHV":12.63,"cmCrecer":12.1,"estProyec":183.4,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Maickol Gavilan","cat":"Sub 13","edad":12.9,"masa":53.6,"talla":164.5,"offset":-0.4,"edadPHV":13.3,"cmCrecer":22.0,"estProyec":186.5,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Manuel Plaza","cat":"Sub 13","edad":13.0,"masa":49.8,"talla":158.3,"offset":-0.6,"edadPHV":13.6,"cmCrecer":23.8,"estProyec":182.1,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Martin Diaz","cat":"Sub 13","edad":11.9,"masa":45.4,"talla":155.7,"offset":-1.37,"edadPHV":13.27,"cmCrecer":29.6,"estProyec":185.3,"clasif":"Pre-PHV","interp":"VERDE - Desarrollo"},
+  {"nombre":"Martin Santander","cat":"Sub 13","edad":12.5,"masa":47.3,"talla":158.7,"offset":-0.89,"edadPHV":13.39,"cmCrecer":26.2,"estProyec":184.9,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Martin Concha","cat":"Sub 13","edad":13.5,"masa":58.0,"talla":160.5,"offset":-0.34,"edadPHV":13.84,"cmCrecer":21.1,"estProyec":181.6,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Milenko Araya","cat":"Sub 13","edad":13.1,"masa":53.8,"talla":170.2,"offset":-0.02,"edadPHV":13.12,"cmCrecer":19.0,"estProyec":189.2,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Renato Ugarte","cat":"Sub 13","edad":12.7,"masa":57.3,"talla":162.3,"offset":-0.59,"edadPHV":13.29,"cmCrecer":23.8,"estProyec":186.1,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Rodrigo Maluenda","cat":"Sub 13","edad":13.0,"masa":63.9,"talla":171.7,"offset":0.22,"edadPHV":12.79,"cmCrecer":15.9,"estProyec":187.6,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Salvador Sanchez","cat":"Sub 13","edad":13.1,"masa":58.1,"talla":165.5,"offset":-0.34,"edadPHV":13.44,"cmCrecer":21.1,"estProyec":186.6,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Sebastian Quezada","cat":"Sub 13","edad":13.2,"masa":42.8,"talla":163.2,"offset":-0.71,"edadPHV":13.91,"cmCrecer":23.0,"estProyec":186.2,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Vicente Arancibia","cat":"Sub 13","edad":13.0,"masa":55.9,"talla":167.0,"offset":-0.02,"edadPHV":13.02,"cmCrecer":18.0,"estProyec":185.0,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Aaron Diaz","cat":"Sub 14","edad":14.0,"masa":56.5,"talla":166.5,"offset":0.54,"edadPHV":13.46,"cmCrecer":13.0,"estProyec":179.5,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Agustin Torres","cat":"Sub 14","edad":13.6,"masa":60.1,"talla":163.1,"offset":-0.06,"edadPHV":13.66,"cmCrecer":19.0,"estProyec":182.1,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Alexis Segovia","cat":"Sub 14","edad":13.6,"masa":58.6,"talla":168.7,"offset":0.36,"edadPHV":13.24,"cmCrecer":14.9,"estProyec":183.6,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Bastian Villarroel","cat":"Sub 14","edad":13.9,"masa":55.5,"talla":159.0,"offset":0.01,"edadPHV":13.9,"cmCrecer":16.6,"estProyec":175.6,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Benjamin Herrera","cat":"Sub 14","edad":14.3,"masa":55.6,"talla":170.9,"offset":0.96,"edadPHV":13.35,"cmCrecer":9.7,"estProyec":180.6,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Benjamin Mendez","cat":"Sub 14","edad":13.9,"masa":58.0,"talla":173.5,"offset":0.78,"edadPHV":13.13,"cmCrecer":11.3,"estProyec":184.8,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Cristian Cerezo","cat":"Sub 14","edad":13.8,"masa":52.6,"talla":166.2,"offset":0.3,"edadPHV":13.51,"cmCrecer":14.9,"estProyec":181.1,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Cristian Rojas","cat":"Sub 14","edad":14.2,"masa":45.8,"talla":154.7,"offset":-0.25,"edadPHV":14.45,"cmCrecer":18.0,"estProyec":172.7,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Cristobal Sarmiento","cat":"Sub 14","edad":14.1,"masa":53.3,"talla":163.1,"offset":0.28,"edadPHV":13.82,"cmCrecer":15.9,"estProyec":179.0,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Cristobal Vega","cat":"Sub 14","edad":13.3,"masa":61.5,"talla":166.1,"offset":0.17,"edadPHV":13.13,"cmCrecer":15.9,"estProyec":182.0,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Donkan Collao","cat":"Sub 14","edad":13.9,"masa":53.6,"talla":169.0,"offset":0.46,"edadPHV":13.44,"cmCrecer":13.0,"estProyec":182.0,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Emiliano Santander","cat":"Sub 14","edad":13.4,"masa":54.3,"talla":171.0,"offset":0.36,"edadPHV":13.05,"cmCrecer":14.9,"estProyec":185.9,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Emilio Rodriguez","cat":"Sub 14","edad":14.1,"masa":62.9,"talla":165.5,"offset":0.5,"edadPHV":13.6,"cmCrecer":13.0,"estProyec":178.5,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Gaspar Olivares","cat":"Sub 14","edad":13.5,"masa":53.8,"talla":167.0,"offset":0.36,"edadPHV":13.15,"cmCrecer":14.9,"estProyec":181.9,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Gerardo Cortes","cat":"Sub 14","edad":13.8,"masa":62.5,"talla":171.6,"offset":0.86,"edadPHV":12.94,"cmCrecer":10.5,"estProyec":182.1,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Gregorio Gonzalez","cat":"Sub 14","edad":14.0,"masa":48.8,"talla":160.7,"offset":0.31,"edadPHV":13.69,"cmCrecer":14.9,"estProyec":175.6,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Ignacio Rojas","cat":"Sub 14","edad":14.2,"masa":54.5,"talla":157.4,"offset":0.49,"edadPHV":13.71,"cmCrecer":13.0,"estProyec":170.4,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Jaime Silva","cat":"Sub 14","edad":13.9,"masa":59.5,"talla":169.5,"offset":0.74,"edadPHV":13.16,"cmCrecer":11.3,"estProyec":180.8,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Joe Riquelme","cat":"Sub 14","edad":14.3,"masa":49.5,"talla":159.1,"offset":-0.15,"edadPHV":14.45,"cmCrecer":16.1,"estProyec":175.3,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Jose Oyarzo","cat":"Sub 14","edad":13.4,"masa":49.8,"talla":161.0,"offset":-0.72,"edadPHV":14.12,"cmCrecer":21.4,"estProyec":182.4,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Manuel Espinoza","cat":"Sub 14","edad":14.2,"masa":56.2,"talla":170.1,"offset":0.4,"edadPHV":13.81,"cmCrecer":14.0,"estProyec":184.1,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Martin Guerrero","cat":"Sub 14","edad":13.9,"masa":57.6,"talla":172.0,"offset":0.87,"edadPHV":13.04,"cmCrecer":9.7,"estProyec":181.7,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Matias Providel","cat":"Sub 14","edad":14.0,"masa":62.2,"talla":173.8,"offset":1.08,"edadPHV":12.92,"cmCrecer":8.3,"estProyec":182.1,"clasif":"Post-PHV","interp":"ROJO - Riesgo"},
+  {"nombre":"Matias Rojas","cat":"Sub 14","edad":13.9,"masa":60.8,"talla":168.5,"offset":0.53,"edadPHV":13.37,"cmCrecer":13.0,"estProyec":181.5,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Maximiliano Araya","cat":"Sub 14","edad":14.2,"masa":55.0,"talla":168.3,"offset":0.47,"edadPHV":13.73,"cmCrecer":14.0,"estProyec":182.3,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Pablo Aguila","cat":"Sub 14","edad":14.1,"masa":62.4,"talla":167.4,"offset":0.81,"edadPHV":13.29,"cmCrecer":10.5,"estProyec":177.9,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Samuel Lares","cat":"Sub 14","edad":14.4,"masa":58.2,"talla":167.7,"offset":0.85,"edadPHV":13.56,"cmCrecer":9.7,"estProyec":177.4,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"},
+  {"nombre":"Yamir Sepulveda","cat":"Sub 14","edad":14.0,"masa":50.3,"talla":162.4,"offset":0.05,"edadPHV":13.95,"cmCrecer":16.6,"estProyec":179.0,"clasif":"Circa-PHV","interp":"AMARILLO - Atención"}
+];
+
+function phvColor(offset) {
+  if (offset < -1) return 'var(--green)';
+  if (offset > 1)  return 'var(--red)';
+  return 'var(--yellow)';
+}
+
+function phvClsHtml(c) {
+  if (c === 'Pre-PHV')   return `<span class="sem sem-green">${c}</span>`;
+  if (c === 'Post-PHV')  return `<span class="sem sem-red">${c}</span>`;
+  return `<span class="sem sem-yellow">${c}</span>`;
+}
+
+function renderPHV() {
+  const cat = document.getElementById('phv-cat').value;
+  const cls = document.getElementById('phv-cls').value;
+  const rows = PHV_DATA.filter(r =>
+    (!cat || r.cat === cat) &&
+    (!cls || r.clasif === cls)
+  );
+
+  const pre   = rows.filter(r => r.clasif === 'Pre-PHV').length;
+  const circa = rows.filter(r => r.clasif === 'Circa-PHV').length;
+  const post  = rows.filter(r => r.clasif === 'Post-PHV').length;
+  const offsets = rows.map(r => r.offset);
+  const avgOff = offsets.length ? (offsets.reduce((a,b)=>a+b,0)/offsets.length).toFixed(2) : '—';
+
+  document.getElementById('phv-pre').textContent   = pre;
+  document.getElementById('phv-circa').textContent = circa;
+  document.getElementById('phv-post').textContent  = post;
+  document.getElementById('phv-offset-avg').textContent = avgOff;
+
+  // Tabla principal
+  const tb = document.getElementById('tbl-phv');
+  tb.innerHTML = rows.map(r => `<tr>
+    <td class="td-name">${r.nombre}</td>
+    <td class="td-cat">${r.cat}</td>
+    <td>${r.edad}</td>
+    <td>${r.talla}</td>
+    <td>${r.masa}</td>
+    <td style="color:${phvColor(r.offset)};font-weight:600">${r.offset}</td>
+    <td>${r.edadPHV}</td>
+    <td>${r.cmCrecer}</td>
+    <td>${r.estProyec}</td>
+    <td>${phvClsHtml(r.clasif)}</td>
+    <td style="font-size:11px;color:var(--muted)">${r.interp}</td>
+  </tr>`).join('');
+
+  // Tabla cruce PHV × DJ
+  const tbC = document.getElementById('tbl-phv-cruce');
+  tbC.innerHTML = rows.map(r => {
+    const dj  = DATA.perfil.find(d => d[0].toLowerCase().includes(r.nombre.split(' ')[0].toLowerCase()) && d[0].toLowerCase().includes(r.nombre.split(' ')[1]?.toLowerCase()||''));
+    const cmj = dj ? fmtNum(dj[2],1) : '—';
+    const rsi = dj ? fmtNum(dj[6],3) : '—';
+    let ctx = '—';
+    if (dj) {
+      const rsiVal = parseFloat(dj[6]);
+      if (r.clasif === 'Pre-PHV')   ctx = rsiVal < 1.8 ? '⚠ Esperado — foco técnico' : '✅ Por encima del esperado';
+      if (r.clasif === 'Circa-PHV') ctx = rsiVal >= 2.0 ? '✅ Buena reactividad' : '⚠ Monitorear carga';
+      if (r.clasif === 'Post-PHV')  ctx = rsiVal >= 2.5 ? '✅ Nivel adulto progresivo' : '⚠ Revisar carga excéntrica';
+    }
+    return `<tr>
+      <td class="td-name">${r.nombre}</td>
+      <td class="td-cat">${r.cat}</td>
+      <td>${phvClsHtml(r.clasif)}</td>
+      <td style="color:${phvColor(r.offset)};font-weight:600">${r.offset}</td>
+      <td>${cmj}</td>
+      <td>${rsi}</td>
+      <td style="font-size:11px">${ctx}</td>
+    </tr>`;
+  }).join('');
+
+  // Gráficos
+  renderPHVcharts(rows);
+}
+
+function renderPHVcharts(rows) {
+  // Gráfico offset (histograma simplificado)
+  const ctx1 = document.getElementById('chart-phv-offset').getContext('2d');
+  if (charts.phvOffset) charts.phvOffset.destroy();
+  const sorted = [...rows].sort((a,b) => a.offset - b.offset);
+  charts.phvOffset = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(r => r.nombre.split(' ')[0]),
+      datasets: [{
+        label: 'Offset PHV',
+        data: sorted.map(r => r.offset),
+        backgroundColor: sorted.map(r => phvColor(r.offset) === 'var(--green)' ? '#22C55Eaa' : phvColor(r.offset) === 'var(--red)' ? '#EF4444aa' : '#EAB308aa'),
+        borderRadius: 3
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ticks:{color:'#777',font:{size:9}},grid:{color:'#2A2A2A'}},
+        y:{ticks:{color:'#777',font:{size:9}},grid:{color:'#2A2A2A'},title:{display:true,text:'años',color:'#777',font:{size:9}}}
+      }
+    }
+  });
+
+  // Gráfico dona clasificación
+  const ctx2 = document.getElementById('chart-phv-cls').getContext('2d');
+  if (charts.phvCls) charts.phvCls.destroy();
+  const pre   = rows.filter(r=>r.clasif==='Pre-PHV').length;
+  const circa = rows.filter(r=>r.clasif==='Circa-PHV').length;
+  const post  = rows.filter(r=>r.clasif==='Post-PHV').length;
+  charts.phvCls = new Chart(ctx2, {
+    type:'doughnut',
+    data:{
+      labels:['Pre-PHV','Circa-PHV','Post-PHV'],
+      datasets:[{data:[pre,circa,post],backgroundColor:['#22C55E','#EAB308','#EF4444'],borderColor:'#111',borderWidth:2}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#aaa',font:{size:10},padding:8}}}}
+  });
+}
+
+function exportPHVcsv() {
+  const cat = document.getElementById('phv-cat').value;
+  const cls = document.getElementById('phv-cls').value;
+  const rows = PHV_DATA.filter(r => (!cat||r.cat===cat) && (!cls||r.clasif===cls));
+  if (!rows.length) { alert('Sin datos para exportar'); return; }
+  const header = ['Nombre','Cat.','Edad','Talla(cm)','Masa(kg)','Offset PHV','Edad PHV est.','Cm por crecer','Est. proyectada (cm)','Clasificación','Interpretación'];
+  const data = rows.map(r => [r.nombre,r.cat,r.edad,r.talla,r.masa,r.offset,r.edadPHV,r.cmCrecer,r.estProyec,r.clasif,r.interp]);
+  downloadCSV('PHV_cadetes_2026.csv', [header,...data]);
+}
+
+// ══════════════════════════════════════════
+// EXPORTACIONES
+// ══════════════════════════════════════════
+function downloadCSV(filename, rows) {
+  const bom = '\uFEFF';
+  const csv = bom + rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+function exportVelocidadCSV() {
+  const cat = CAT_STATE.vel;
+  const rows = DATA.velocidad.filter(r => catMatch(r[1], cat) && r[0]);
+  if (!rows.length) { alert('Sin datos de velocidad para exportar'); return; }
+  const header = ['Nombre','Cat.','10m E1 Mejor(s)','10m E2 Mejor(s)','10m E3 Mejor(s)','10m Δ E1→E2(%)','10m Δ E2→E3(%)','10m Tendencia','20m E1 Mejor(s)','20m E2 Mejor(s)','20m E3 Mejor(s)','20m Δ E1→E2(%)','20m Δ E2→E3(%)','20m Tendencia'];
+  const data = rows.map(r => [
+    r[0],r[1],
+    fmtNum(r[5],2),fmtNum(r[9],2),fmtNum(r[13],2),r[14]||'—',r[15]||'—',r[16]||'—',
+    fmtNum(r[20],2),fmtNum(r[24],2),fmtNum(r[28],2),r[29]||'—',r[30]||'—',r[31]||'—'
+  ]);
+  downloadCSV('velocidad_cadetes_2026.csv', [header, ...data]);
+}
+
+function exportPerfilCSV() {
+  const cat = CAT_STATE.dj;
+  const rows = DATA.perfil.filter(r => catMatch(r[1], cat) && r[0]);
+  if (!rows.length) { alert('Sin datos de Perfil DJ para exportar'); return; }
+  const header = ['Nombre','Cat.','CMJ E1(cm)','H.caída DJ(cm)','H.salto DJ(cm)','Tc(ms)','Q/RSI','Perfil DJ'];
+  const data = rows.map(r => [
+    r[0],r[1],
+    fmtNum(r[2],1),r[3]||'—',fmtNum(r[4] ,1),r[5]||'—',fmtNum(r[6],3),r[7]||'—'
+  ]);
+  downloadCSV('perfil_dj_cadetes_2026.csv', [header, ...data]);
+}
+
+function exportFichaPDF() {
+  const nombre = document.getElementById('ficha-sel').value;
+  if (!nombre) { alert('Selecciona un deportista primero'); return; }
+
+  const cont = document.getElementById('ficha-content');
+  if (!cont || cont.innerHTML.includes('Selecciona')) { alert('Genera la ficha primero seleccionando un deportista'); return; }
+
+  const style = `
+    <style>
+      body { font-family: Arial, sans-serif; color: #111; background: #fff; padding: 24px; }
+      h1 { font-size: 18px; margin-bottom: 4px; }
+      h2 { font-size: 13px; color: #555; margin-bottom: 20px; font-weight: normal; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .block { border: 1px solid #ddd; border-radius: 8px; padding: 14px; }
+      .block-title { font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #333; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+      .row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid #f5f5f5; }
+      .row:last-child { border-bottom: none; }
+      .label { color: #777; }
+      .val { font-weight: 600; }
+      .sem-green { color: #16a34a; } .sem-yellow { color: #ca8a04; } .sem-red { color: #dc2626; }
+      .chip { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+      .chip-green { background: #dcfce7; color: #16a34a; }
+      .chip-yellow { background: #fef9c3; color: #ca8a04; }
+      .chip-orange { background: #ffedd5; color: #ea580c; }
+      .chip-red { background: #fee2e2; color: #dc2626; }
+      footer { margin-top: 24px; font-size: 10px; color: #aaa; text-align: center; }
+    </style>
+  `;
+
+  const velRow  = DATA.velocidad.find(r => r[0] === nombre);
+  const djRow   = DATA.perfil.find(r => r[0] === nombre);
+  const regRows = DATA.registro.filter(r => r[2] === nombre);
+  const fatRow  = DATA.fatiga.find(r => r[0] === nombre);
+
+  const cat = velRow ? velRow[1] : djRow ? djRow[1] : '—';
+  const sesTotal = regRows.length;
+  const volTotal = regRows.reduce((s,r)=>s+(parseFloat(r[28])||0),0);
+  const rpes = regRows.map(r=>parseFloat(r[29])).filter(n=>!isNaN(n));
+  const rpeAvg = rpes.length ? (rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1) : '—';
+
+  function chipP(p) {
+    if (!p||p==='—') return '—';
+    if (p.includes('Óptimo')) return `<span class="chip chip-green">${p}</span>`;
+    if (p.includes('Lenta'))  return `<span class="chip chip-yellow">${p}</span>`;
+    if (p.includes('Inef'))   return `<span class="chip chip-orange">${p}</span>`;
+    if (p.includes('Global')) return `<span class="chip chip-red">${p}</span>`;
+    return p;
+  }
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ficha ${nombre}</title>${style}</head><body>
+    <h1>Ficha Individual — ${nombre}</h1>
+    <h2>Categoría: ${cat} · Coquimbo Unido Cadetes 2026 · Temporada E1 (Abril 2026)</h2>
+    <div class="grid">
+      <div class="block">
+        <div class="block-title">📋 Carga de entrenamiento</div>
+        <div class="row"><span class="label">Sesiones registradas</span><span class="val">${sesTotal}</span></div>
+        <div class="row"><span class="label">Volumen acumulado</span><span class="val">${volTotal.toLocaleString('es-CL')} kg</span></div>
+        <div class="row"><span class="label">RPE promedio</span><span class="val">${rpeAvg}</span></div>
+      </div>
+      <div class="block">
+        <div class="block-title">⚡ Velocidad E1</div>
+        ${velRow ? `
+        <div class="row"><span class="label">10m mejor (s)</span><span class="val">${fmtNum(velRow[5],2)}</span></div>
+        <div class="row"><span class="label">20m mejor (s)</span><span class="val">${fmtNum(velRow[20],2)}</span></div>
+        <div class="row"><span class="label">Semáforo 10m</span><span class="val">${velRow[16]||'—'}</span></div>
+        <div class="row"><span class="label">Semáforo 20m</span><span class="val">${velRow[31]||'—'}</span></div>
+        ` : '<div class="row"><span class="label">Sin evaluaciones</span></div>'}
+      </div>
+      <div class="block">
+        <div class="block-title">🏋️ Perfil DJ E1</div>
+        ${djRow ? `
+        <div class="row"><span class="label">CMJ mejor (cm)</span><span class="val">${fmtNum(djRow[2],1)}</span></div>
+        <div class="row"><span class="label">H. caída (cm)</span><span class="val">${djRow[3]||'—'}</span></div>
+        <div class="row"><span class="label">H. salto DJ (cm)</span><span class="val">${fmtNum(djRow[4],1)}</span></div>
+        <div class="row"><span class="label">Tc (ms)</span><span class="val">${djRow[5]||'—'}</span></div>
+        <div class="row"><span class="label">Q / RSI</span><span class="val">${fmtNum(djRow[6],3)}</span></div>
+        <div class="row"><span class="label">Perfil</span><span class="val">${chipP(djRow[7])}</span></div>
+        ` : '<div class="row"><span class="label">Sin evaluaciones</span></div>'}
+      </div>
+      <div class="block">
+        <div class="block-title">📊 Fatiga CMJ</div>
+        ${fatRow ? `
+        <div class="row"><span class="label">Estado actual</span><span class="val">${fatRow[74]||'—'}</span></div>
+        <div class="row"><span class="label">CMJ Inicio (Abr)</span><span class="val">${fmtNum(fatRow[4],1)} cm</span></div>
+        <div class="row"><span class="label">CMJ Final (Abr)</span><span class="val">${fmtNum(fatRow[7],1)} cm</span></div>
+        <div class="row"><span class="label">% Cambio</span><span class="val">${fatRow[8]||'—'}</span></div>
+        ` : '<div class="row"><span class="label">Sin evaluaciones</span></div>'}
+      </div>
+    </div>
+    <footer>Generado el ${new Date().toLocaleDateString('es-CL')} · Dashboard Técnico Coquimbo Unido Cadetes 2026 · Prof. Claudio Rojas Hidalgo</footer>
+    <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPwd();
+});
+</script>
+</body>
+</html>
