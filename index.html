@@ -571,6 +571,116 @@ function parseCSV(text) {
 // ══════════════════════════════════════════
 async function loadAll() {
   document.getElementById('last-update').textContent = 'Actualizando...';
+
+  // ── DATOS EMBEBIDOS (siempre disponibles) ──────────────────────────────────
+  // Velocidad: [Nombre, Cat, Puesto, 5mI1,5mI2,5mI3,5mMejor, 10mI1,10mI2,10mI3,10mMejor, 30mI1,30mI2,30mI3,30mMejor, Sem5,Sem10,Sem30,Obs]
+  const VEL_DATA = [
+    ["Agustin Gomez","Sub 13","MD",1.144,1.157,null,1.144,1.891,1.890,null,1.890,4.753,4.711,null,4.711,"🟡 Aceptable","🟡 Aceptable","🟡 Aceptable",""],
+    ["Agustin Luque","Sub 13","Portero",1.121,1.113,null,1.113,1.495,1.913,null,1.495,5.057,4.981,null,4.981,"🟡 Aceptable","🟢 Óptimo","🔴 Por mejorar",""],
+    ["Alejandro Toranzo","Sub 13","DEL",1.306,1.174,null,1.174,2.105,1.988,null,1.988,5.142,4.969,null,4.969,"🟡 Aceptable","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Alonso Rocco","Sub 13","MD",1.283,1.263,null,1.263,2.103,2.109,null,2.103,5.323,5.320,null,5.320,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Benjamin Leyton","Sub 13","DEF",1.237,1.207,null,1.207,2.080,2.018,null,2.018,5.033,5.105,null,5.033,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Benjamin Vallejos","Sub 13","DEF",1.087,1.190,null,1.087,1.888,1.998,null,1.888,4.695,4.864,null,4.695,"🟢 Óptimo","🟡 Aceptable","🟡 Aceptable",""],
+    ["Bruno Olivares","Sub 13","DEF",1.263,1.260,null,1.260,2.112,2.064,null,2.064,5.139,5.071,null,5.071,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Cristian Castillo","Sub 13","MD",1.248,1.130,null,1.130,2.138,2.029,null,2.029,5.284,5.157,null,5.157,"🟡 Aceptable","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Cristobal Vega","Sub 13","MD",1.014,0.857,0.831,0.831,1.815,1.671,1.666,1.666,4.489,4.311,4.333,4.311,"🟢 Óptimo","🟢 Óptimo","🟢 Óptimo",""],
+    ["Dylan Navea","Sub 13","MD",1.201,1.213,null,1.201,2.034,2.047,null,2.034,5.201,5.212,null,5.201,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Emiliano Montalban","Sub 13","DEL",1.274,1.284,null,1.274,2.076,2.104,null,2.076,5.160,5.139,null,5.139,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Esaid Rojas","Sub 13","MD",1.205,1.240,null,1.205,1.975,2.050,null,1.975,5.039,5.035,null,5.035,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Felipe Valdivia","Sub 13","MD",null,null,null,null,null,null,null,null,null,null,null,null,"","","","LESIONADO"],
+    ["Giacomo Zandonai","Sub 13","DEL",1.149,1.190,null,1.149,1.969,1.996,null,1.969,5.035,5.038,null,5.035,"🟡 Aceptable","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Jose Galvez","Sub 13","MD",1.277,1.314,null,1.277,2.143,2.190,null,2.143,5.374,5.576,null,5.374,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Leon Peralta","Sub 13","DEF",1.158,1.163,null,1.158,1.885,1.896,null,1.885,4.441,4.435,null,4.435,"🟡 Aceptable","🟡 Aceptable","🟢 Óptimo",""],
+    ["Maickol Gavilan","Sub 13","MD",1.264,1.106,null,1.106,2.022,1.864,null,1.864,4.863,4.664,null,4.664,"🟡 Aceptable","🟡 Aceptable","🟡 Aceptable",""],
+    ["Manuel Plaza","Sub 13","MD",1.299,1.237,null,1.237,2.135,2.070,null,2.070,5.290,5.199,null,5.199,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Martin Concha","Sub 13","MD",1.270,1.307,null,1.270,2.121,2.132,null,2.121,5.233,5.184,null,5.184,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Martin Diaz","Sub 13","MD",1.259,1.243,null,1.243,2.080,2.075,null,2.075,5.168,5.171,null,5.168,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Martin Santander","Sub 13","PT",1.169,1.173,null,1.169,1.999,1.992,null,1.992,5.151,null,null,5.151,"🟡 Aceptable","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Milenko Araya","Sub 13","MD",1.171,1.242,null,1.171,1.966,2.047,null,1.966,4.729,5.191,null,4.729,"🟡 Aceptable","🔴 Por mejorar","🟡 Aceptable",""],
+    ["Renato Ugarte","Sub 13","PT",1.029,1.044,null,1.029,1.792,1.793,null,1.792,4.533,null,null,4.533,"🟢 Óptimo","🟢 Óptimo","🟢 Óptimo",""],
+    ["Rodrigo Maluenda","Sub 13","DEL",null,null,null,null,null,null,null,null,null,null,null,null,"","","","LESIONADO"],
+    ["Salvador Sanchez","Sub 13","DEF",1.277,1.305,null,1.277,2.150,2.205,null,2.150,5.601,5.662,null,5.601,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Sebastian Quezada","Sub 13","MD",1.113,1.175,null,1.113,1.945,1.990,null,1.945,4.089,4.933,null,4.089,"🟡 Aceptable","🟡 Aceptable","🟢 Óptimo",""],
+    ["Vicente Arancibia","Sub 13","PT",1.277,1.395,null,1.277,2.152,2.243,null,2.152,5.466,5.538,null,5.466,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Aaron Diaz","Sub 14","DL",0.870,0.876,0.870,0.870,1.711,1.686,1.641,1.641,4.486,4.379,4.430,4.379,"🟢 Óptimo","🟢 Óptimo","🟡 Aceptable",""],
+    ["Agustin Torres","Sub 14","PT",null,null,null,null,null,null,null,null,null,null,null,null,"","","",""],
+    ["Alexis Segovia","Sub 14","MD",0.900,0.876,0.961,0.876,1.799,1.739,1.823,1.739,4.730,4.605,4.652,4.605,"🟢 Óptimo","🟡 Aceptable","🔴 Por mejorar",""],
+    ["Bastian Villarroel","Sub 14","DEF",1.002,0.865,0.868,0.865,1.823,1.677,1.656,1.656,4.565,4.451,4.455,4.451,"🟢 Óptimo","🟢 Óptimo","🟡 Aceptable",""],
+    ["Benjamin Herrera","Sub 14","PT",null,null,null,null,null,null,null,null,null,null,null,null,"","","",""],
+    ["Benjamin Mendez","Sub 14","MD",1.101,1.004,0.903,0.903,2.008,1.847,1.787,1.787,5.068,4.886,4.836,4.836,"🟢 Óptimo","🟡 Aceptable","🔴 Por mejorar",""],
+    ["Cristian Rojas","Sub 14","MD",0.939,0.984,1.071,0.939,1.817,1.865,1.887,1.817,4.852,4.874,4.905,4.852,"🟢 Óptimo","🟡 Aceptable","🔴 Por mejorar",""],
+    ["Cristobal Cerezo","Sub 14","MD",0.906,0.918,0.908,0.906,1.726,1.749,1.728,1.726,4.598,4.598,4.569,4.569,"🟢 Óptimo","🟡 Aceptable","🟡 Aceptable",""],
+    ["Cristobal Sarmiento","Sub 14","DF",1.198,1.175,null,1.175,1.965,1.935,null,1.935,4.753,4.712,null,4.712,"🔴 Por mejorar","🔴 Por mejorar","🔴 Por mejorar",""],
+    ["Donkan Collao","Sub 14","DF",0.943,0.879,0.943,0.879,1.782,1.719,1.779,1.719,4.649,4.584,4.632,4.584,"🟢 Óptimo","🟢 Óptimo","🟡 Aceptable",""],
+    ["Emiliano Santander","Sub 14","DL",null,null,null,null,null,null,null,null,null,null,null,null,"","","",""],
+    ["Emilio Rodriguez","Sub 14","DL",1.082,1.064,null,1.064,1.831,1.750,null,1.750,4.515,4.446,null,4.446,"🟡 Aceptable","🟡 Aceptable","🟡 Aceptable",""],
+    ["Gaspar Olivares","Sub 14","DEF",0.932,0.986,0.971,0.932,1.823,1.811,1.810,1.810,4.905,4.766,4.803,4.766,"🟢 Óptimo","🟡 Aceptable","🔴 Por mejorar",""],
+    ["Gerardo Cortes","Sub 14","DEF",0.873,0.876,0.892,0.873,1.675,1.709,1.682,1.675,4.770,4.354,4.331,4.331,"🟢 Óptimo","🟢 Óptimo","🟢 Óptimo",""],
+    ["Gregorio Gonzalez","Sub 14","DEL",1.065,0.890,0.901,0.890,1.912,1.748,1.768,1.748,4.811,4.657,4.624,4.624,"🟢 Óptimo","🟡 Aceptable","🔴 Por mejorar",""],
+    ["Ignacio Rojas","Sub 14","DEF",1.047,0.899,0.956,0.899,1.868,1.734,1.759,1.734,4.574,4.455,4.690,4.455,"🟢 Óptimo","🟡 Aceptable","🟡 Aceptable",""],
+    ["Jaime Silva","Sub 14","MD",0.973,0.855,0.845,0.845,1.822,1.697,1.704,1.697,4.708,4.580,4.579,4.579,"🟢 Óptimo","🟢 Óptimo","🟡 Aceptable",""],
+    ["Joe Riquelme","Sub 14","DEF",1.120,0.921,1.108,0.921,2.034,1.820,1.987,1.820,5.060,4.775,4.953,4.775,"🟢 Óptimo","🟡 Aceptable","🔴 Por mejorar",""],
+    ["Jose Oyarzo","Sub 14","DEF",0.887,0.759,0.808,0.759,1.733,1.626,1.659,1.626,4.655,null,null,4.655,"🟢 Óptimo","🟢 Óptimo","🟡 Aceptable","⚠ Revisar 30m"],
+    ["Manuel Espinoza","Sub 14","DEF",0.922,0.888,0.906,0.888,1.821,1.796,1.789,1.789,4.913,4.817,4.765,4.765,"🟢 Óptimo","🟡 Aceptable","🔴 Por mejorar",""],
+    ["Martin Guerrero","Sub 14","PT",1.806,1.034,null,1.034,1.880,1.769,null,1.769,4.467,4.536,null,4.467,"🟢 Óptimo","🟡 Aceptable","🟡 Aceptable",""],
+    ["Matias Providel","Sub 14","MD",0.947,1.012,0.973,0.947,1.813,1.888,1.795,1.795,4.680,4.695,4.558,4.558,"🟢 Óptimo","🟡 Aceptable","🟡 Aceptable",""],
+    ["Matias Rojas","Sub 14","DEF",0.916,1.004,1.040,0.916,1.777,1.801,1.883,1.777,4.664,4.622,4.637,4.622,"🟢 Óptimo","🟡 Aceptable","🔴 Por mejorar",""],
+    ["Maximiliano Araya","Sub 14","DEL",0.941,0.893,1.008,0.893,1.779,1.818,1.895,1.779,4.600,4.695,4.949,4.600,"🟢 Óptimo","🟡 Aceptable","🟡 Aceptable",""],
+    ["Pablo Aguila","Sub 14","DEL",0.941,1.006,1.444,0.941,1.758,1.812,1.947,1.758,4.331,4.395,4.527,4.331,"🟢 Óptimo","🟡 Aceptable","🟢 Óptimo",""],
+    ["Samuel Lares","Sub 14","",null,null,null,null,null,null,null,null,null,null,null,null,"","","","JUEGA EN LA 15"],
+    ["Yamir Sepulveda","Sub 14","MD",null,null,null,null,null,null,null,null,null,null,null,null,"","","",""],
+  ];
+
+  // Perfil: [Nombre, Cat, CMJ_mejor, H_caida, H_salto_dj, Tc, Q_rsi, Perfil]
+  const PERF_DATA = [
+    ["Araya Milenko","Sub 13",39.6,20,22.9,184,2.348,"🟡 Reactivo Med."],
+    ["Castillo Cristian","Sub 13",22.9,null,null,null,null,"Sin datos DJ"],
+    ["Concha Martin","Sub 13",27.3,20,27.3,128,3.685,"🟢 Reactivo Opt."],
+    ["Diaz Martin","Sub 13",26.5,20,22.0,256,1.654,"🟠 Límite"],
+    ["Galvez Jose","Sub 13",25.5,20,22.9,216,2.001,"🟡 Reactivo Med."],
+    ["Gavilan Maickol","Sub 13",36.3,20,31.1,208,2.422,"🟡 Reactivo Med."],
+    ["Gomez Agustin","Sub 13",28.2,30,29.2,176,2.770,"🟢 Reactivo Opt."],
+    ["Leyton Benjamin","Sub 13",35.2,20,27.4,152,3.105,"🟢 Reactivo Opt."],
+    ["Luque Agustin","Sub 13",28.3,20,22.9,280,1.544,"🟠 Límite"],
+    ["Montalban Emiliano","Sub 13",22.1,20,25.5,136,3.353,"🟢 Reactivo Opt."],
+    ["Olivares Bruno","Sub 13",34.2,20,33.2,144,3.617,"🟢 Reactivo Opt."],
+    ["Peralta Leon","Sub 13",30.1,20,22.9,208,2.078,"🟡 Reactivo Med."],
+    ["Plaza Manuel","Sub 13",26.4,20,27.3,168,2.808,"🟢 Reactivo Opt."],
+    ["Quezada Sebastian","Sub 13",32.1,20,26.5,176,2.640,"🟢 Reactivo Opt."],
+    ["Rocco Alonso","Sub 13",27.4,20,29.2,232,2.104,"🟡 Reactivo Med."],
+    ["Sanchez Salvador","Sub 13",20.4,null,null,null,null,"Sin datos DJ"],
+    ["Toranzo Alejandro","Sub 13",25.5,20,22.9,320,1.350,"🔴 Déficit React."],
+    ["Ugarte Renato","Sub 13",37.4,20,33.1,248,2.093,"🟡 Reactivo Med."],
+    ["Vallejos Benjamin","Sub 13",33.1,20,31.1,224,2.249,"🟡 Reactivo Med."],
+    ["Vega Cristobal","Sub 13",42.9,20,35.2,184,2.912,"🟢 Reactivo Opt."],
+    ["Zandonai Giacomo","Sub 13",25.5,20,24.6,200,2.243,"🟡 Reactivo Med."],
+    ["Aguila Pablo","Sub 14",39.6,20,29.2,168,2.907,"🟢 Reactivo Opt."],
+    ["Collao Donkan","Sub 14",35.3,20,35.2,208,2.577,"🟢 Reactivo Opt."],
+    ["Cortes Gerardo","Sub 14",null,null,null,null,null,"Sin datos"],
+    ["Diaz Aaron","Sub 14",32.1,20,27.3,168,2.808,"🟢 Reactivo Opt."],
+    ["Espinoza Manuel","Sub 14",34.2,20,29.2,192,2.543,"🟢 Reactivo Opt."],
+    ["Gonzalez Gregorio","Sub 14",35.2,20,26.4,192,2.415,"🟡 Reactivo Med."],
+    ["Guerrero Martin","Sub 14",30.1,20,28.2,264,1.819,"🟠 Límite"],
+    ["Mendez Benjamin","Sub 14",29.2,20,22.0,184,2.304,"🟡 Reactivo Med."],
+    ["Olivares Gaspar","Sub 14",32.1,20,31.1,168,3.003,"🟢 Reactivo Opt."],
+    ["Oyarzo Jose","Sub 14",36.3,20,35.2,168,3.188,"🟢 Reactivo Opt."],
+    ["Providel Matias","Sub 14",33.1,20,20.4,184,2.218,"🟡 Reactivo Med."],
+    ["Riquelme Joe","Sub 14",29.1,20,28.2,208,2.309,"🟡 Reactivo Med."],
+    ["Rodriguez Emilio","Sub 14",23.8,20,18.8,176,2.225,"🟡 Reactivo Med."],
+    ["Rojas Cristian","Sub 14",30.1,20,24.7,232,1.932,"🟠 Límite"],
+    ["Rojas Esaid","Sub 14",27.4,20,23.8,200,2.201,"🟡 Reactivo Med."],
+    ["Rojas Ignacio","Sub 14",32.1,20,26.4,232,2.000,"🟡 Reactivo Med."],
+    ["Rojas Matias","Sub 14",null,30,35.3,184,2.918,"🟢 Reactivo Opt."],
+    ["Sarmiento Cristobal","Sub 14",31.1,20,31.1,216,2.335,"🟡 Reactivo Med."],
+    ["Segovia Alexis","Sub 14",33.1,20,27.4,248,1.903,"🟠 Límite"],
+    ["Silva Jaime","Sub 14",32.1,20,30.1,216,2.296,"🟡 Reactivo Med."],
+    ["Villarroel Bastian","Sub 14",37.4,30,25.5,144,3.172,"🟢 Reactivo Opt."],
+  ];
+
+  // Siempre cargar datos embebidos primero
+  DATA.velocidad = VEL_DATA;
+  DATA.perfil    = PERF_DATA;
+
   try {
     const [cfg, reg, vel, perf, fat] = await Promise.all([
       fetchSheet('CONFIG'),
@@ -580,31 +690,32 @@ async function loadAll() {
       fetchSheet('FATIGA_MENSUAL'),
     ]);
 
-    // Parsear nómina desde CONFIG
-    // Cols: A=ejercicios, B=Sub13, C=Sub14, D=Categorías
     NOMINA.sub13 = cfg.slice(2).map(r => r[1]).filter(n => n && !n.includes('#') && n !== 'SUB 13');
     NOMINA.sub14 = cfg.slice(2).map(r => r[2]).filter(n => n && !n.includes('#') && n !== 'SUB 14');
     NOMINA.all = [...NOMINA.sub13, ...NOMINA.sub14];
 
-    DATA.registro  = reg.slice(2).filter(r => r[0] && r[2]); // fila 1=título, 2=headers
-    DATA.velocidad = vel.slice(4).filter(r => r[0]);          // fila 4 = primera de datos (0-indexed, saltando título+umbrales+encabezados)
-    DATA.perfil    = perf.slice(1).filter(r => r[0] && r[0] !== 'Nombre'); // fila 1 = datos (salta encabezado)
-    DATA.fatiga    = fat.slice(3).filter(r => r[0]);
+    DATA.registro = reg.slice(2).filter(r => r[0] && r[2]);
+    DATA.fatiga   = fat.slice(3).filter(r => r[0]);
 
-    // Poblar selectores
-    populateSelectors();
+    // Solo sobreescribir velocidad/perfil si el Sheet devuelve datos reales
+    const velFromSheet = vel.slice(4).filter(r => r[0] && r[0] !== 'Nombre');
+    const perfFromSheet = perf.slice(1).filter(r => r[0] && r[0] !== 'Nombre');
+    if (velFromSheet.length  > 5) DATA.velocidad = velFromSheet;
+    if (perfFromSheet.length > 5) DATA.perfil    = perfFromSheet;
 
-    renderCarga();
-    renderVelocidad();
-    renderPerfil();
-    renderFatiga();
-    renderPHV();
-
-    document.getElementById('last-update').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
   } catch(e) {
-    console.error(e);
-    document.getElementById('last-update').textContent = 'Error al cargar';
+    console.warn('Sheet no disponible, usando datos embebidos:', e.message);
+    DATA.registro = [];
+    DATA.fatiga   = [];
   }
+
+  populateSelectors();
+  renderCarga();
+  renderVelocidad();
+  renderPerfil();
+  renderFatiga();
+  renderPHV();
+  document.getElementById('last-update').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
 }
 
 function populateSelectors() {
