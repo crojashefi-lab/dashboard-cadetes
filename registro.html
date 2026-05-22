@@ -416,59 +416,23 @@ const EJERCICIOS = [
   "Trabajos de velocidad 10 mtrs"
 ];
 
-// ── CARGA DINÁMICA DEL ROSTER DESDE APPS SCRIPT ───────────────────────────
-async function cargarRoster() {
-  const sel = document.getElementById('nombre');
-  try {
-    const res = await fetch(APPS_SCRIPT_URL + '?action=getRoster', { mode: 'cors' });
-    const data = await res.json();
-
-    sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
-
-    if (data.sub13 && data.sub13.length) {
-      const g13 = document.createElement('optgroup');
-      g13.label = '── Sub 13 ──';
-      data.sub13.sort().forEach(n => {
-        const o = document.createElement('option');
-        o.value = n; o.textContent = n;
-        g13.appendChild(o);
-      });
-      sel.appendChild(g13);
-    }
-
-    if (data.sub14 && data.sub14.length) {
-      const g14 = document.createElement('optgroup');
-      g14.label = '── Sub 14 ──';
-      data.sub14.sort().forEach(n => {
-        const o = document.createElement('option');
-        o.value = n; o.textContent = n;
-        g14.appendChild(o);
-      });
-      sel.appendChild(g14);
-    }
-
-  } catch (err) {
-    // Si falla la carga dinámica, usar roster de respaldo
-    console.warn('Carga dinámica falló, usando roster de respaldo:', err);
-    cargarRosterRespaldo();
-  }
-}
-
-function cargarRosterRespaldo() {
-  const sel = document.getElementById('nombre');
+// ── ROSTER ESTÁTICO ────────────────────────────────────────────────────────
+(function() {
   const sub13 = ["Agustin Gomez","Agustin Luque","Alejandro Toranzo","Alonso Rocco","Benjamin Leyton","Benjamin Vallejos","Bruno Olivares","Cristian Castillo","Dylan Navea","Emiliano Montalban","Esaid Rojas","Felipe Valdivia","Giacomo Zandonai","Jose Galvez","Leon Peralta","Maickol Gavilan","Manuel Plaza","Martin Concha","Martin Diaz","Martin Santander","Milenko Araya","Renato Ugarte","Rodrigo Maluenda","Salvador Sanchez","Sebastian Quezada","Vicente Arancibia"];
   const sub14 = ["Aaron Diaz","Agustin Torres","Alexis Segovia","Bastian Villarroel","Benjamin Herrera","Benjamin Mendez","Cristian Cerezo","Cristian Rojas","Cristobal Sarmiento","Cristobal Vega","Donkan Collao","Emiliano Santander","Emilio Rodriguez","Gaspar Olivares","Gerardo Cortes","Gregorio Gonzalez","Ignacio Rojas","Jaime Silva","Joe Riquelme","Jose Oyarzo","Manuel Espinoza","Martin Guerrero","Matias Providel","Matias Rojas","Maximiliano Araya","Pablo Aguila","Renato Araya","Samuel Larez","Yamir Sepulveda"];
 
+  const sel = document.getElementById('nombre');
   sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
+
   const g13 = document.createElement('optgroup'); g13.label = '── Sub 13 ──';
   sub13.forEach(n => { const o = document.createElement('option'); o.value=n; o.textContent=n; g13.appendChild(o); });
+
   const g14 = document.createElement('optgroup'); g14.label = '── Sub 14 ──';
   sub14.forEach(n => { const o = document.createElement('option'); o.value=n; o.textContent=n; g14.appendChild(o); });
+
   sel.appendChild(g13);
   sel.appendChild(g14);
-}
-
-cargarRoster();
+})();
 
 // ── FECHA HOY ──────────────────────────────────────────────────────────────
 document.getElementById('fecha').valueAsDate = new Date();
