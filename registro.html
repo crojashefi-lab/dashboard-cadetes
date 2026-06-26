@@ -421,17 +421,49 @@ const EJERCICIOS = [
   const sub13 = ["Agustin Gomez","Agustin Luque","Alejandro Toranzo","Alonso Rocco","Benjamin Leyton","Benjamin Vallejos","Bruno Olivares","Cristian Castillo","Dylan Navea","Emiliano Montalban","Esaid Rojas","Felipe Valdivia","Giacomo Zandonai","Jose Galvez","Leon Peralta","Maickol Gavilan","Manuel Plaza","Martin Concha","Martin Diaz","Martin Santander","Milenko Araya","Renato Ugarte","Rodrigo Maluenda","Salvador Sanchez","Sebastian Quezada","Vicente Arancibia"];
   const sub14 = ["Aaron Diaz","Agustin Torres","Alexis Segovia","Bastian Villarroel","Benjamin Herrera","Benjamin Mendez","Cristian Cerezo","Cristian Rojas","Cristobal Sarmiento","Cristobal Vega","Donkan Collao","Emiliano Santander","Emilio Rodriguez","Gaspar Olivares","Gerardo Cortes","Gregorio Gonzalez","Ignacio Rojas","Jaime Silva","Joe Riquelme","Jose Oyarzo","Manuel Espinoza","Martin Guerrero","Matias Providel","Matias Rojas","Maximiliano Araya","Pablo Aguila","Renato Araya","Samuel Larez","Yamir Sepulveda"];
 
+  const SHEET_ID_CFG = "1DW-XlsqyfjbUygmGt9bIGb9MPzv-iEt2vTMFb0WiCtg";
   const sel = document.getElementById('nombre');
-  sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
 
-  const g13 = document.createElement('optgroup'); g13.label = '── Sub 13 ──';
-  sub13.forEach(n => { const o = document.createElement('option'); o.value=n; o.textContent=n; g13.appendChild(o); });
+  function pintar(l13, l14) {
+    sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
+    const g13 = document.createElement('optgroup'); g13.label = '── Sub 13 ──';
+    l13.forEach(n => { const o = document.createElement('option'); o.value=n; o.textContent=n; g13.appendChild(o); });
+    const g14 = document.createElement('optgroup'); g14.label = '── Sub 14 ──';
+    l14.forEach(n => { const o = document.createElement('option'); o.value=n; o.textContent=n; g14.appendChild(o); });
+    sel.appendChild(g13); sel.appendChild(g14);
+  }
 
-  const g14 = document.createElement('optgroup'); g14.label = '── Sub 14 ──';
-  sub14.forEach(n => { const o = document.createElement('option'); o.value=n; o.textContent=n; g14.appendChild(o); });
+  function parseFilas(txt) {
+    return txt.split('\n').map(line => {
+      const cols = []; let cur = '', q = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { q = !q; continue; }
+        if (c === ',' && !q) { cols.push(cur.trim()); cur = ''; continue; }
+        cur += c;
+      }
+      cols.push(cur.trim()); return cols;
+    });
+  }
 
-  sel.appendChild(g13);
-  sel.appendChild(g14);
+  // Carga la nómina EN VIVO desde la pestaña CONFIG del Sheet.
+  // Si agregas nombres en CONFIG (columnas Sub 13 / Sub 14), aparecen solos al recargar.
+  // Si el Sheet no responde, usa la lista fija de respaldo (sub13 / sub14 de arriba).
+  pintar(sub13, sub14); // respaldo inmediato mientras carga
+  (async function () {
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID_CFG}/gviz/tq?tqx=out:csv&sheet=CONFIG`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('http ' + res.status);
+      const filas = parseFilas(await res.text());
+      const ok = v => v && !v.includes('#') && !/sub 1[34]/i.test(v) && !/nómina|nomina|categor|ejercicio/i.test(v);
+      const l13 = filas.map(r => r[1]).filter(ok);
+      const l14 = filas.map(r => r[2]).filter(ok);
+      if (l13.length || l14.length) pintar(l13, l14);
+    } catch (e) {
+      console.warn('No se pudo leer CONFIG, usando lista de respaldo:', e);
+    }
+  })();
 })();
 
 // ── FECHA HOY ──────────────────────────────────────────────────────────────
